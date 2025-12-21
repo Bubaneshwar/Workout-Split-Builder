@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Workout Split Builder</title>
+    <meta name="description" content="Free open-source workout split builder and planner. Drag and drop exercises to customize your 6-day split or any workout routine. Organize by muscle groups and track volume.">
+    <meta name="keywords" content="workout builder, workout planner, split builder, fitness tool, exercise planner, muscle groups, volume tracker, bodybuilding, powerlifting">
+    <meta name="author" content="Ivan Malinovski">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://your-domain.com/workout-split-builder">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-domain.com/workout-split-builder">
+    <meta property="og:title" content="Universal Workout Split Builder & Planner">
+    <meta property="og:description" content="Drag & Drop to Customize Your Program - Completely Free and Open Source. Track volume and organize exercises by muscle group.">
+    <meta property="og:image" content="https://your-domain.com/preview-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://your-domain.com/workout-split-builder">
+    <meta property="twitter:title" content="Universal Workout Split Builder & Planner">
+    <meta property="twitter:description" content="Drag & Drop to Customize Your Program - Completely Free and Open Source. Track volume and organize exercises by muscle group.">
+    <meta property="twitter:image" content="https://your-domain.com/preview-image.jpg">
+
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Simple Workout Split Builder",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "A free drag-and-drop workout builder to create and customize workout splits, track set volume, and organize exercises by muscle group.",
+      "featureList": "Drag and drop interface, Volume tracking, Muscle group categorization, Session management",
+      "author": {
+        "@type": "Person",
+        "name": "Ivan Malinovski"
+      }
+    }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="container">
+        <header class="header">
+            <h1>Simple Workout Split Builder & Planner</h1>
+            <p>Drag & Drop to Customize Your Program - Completely Free and Open Source 👌</p>
+            <div class="controls">
+                <button class="btn-add" onclick="addSession()">+ Add Session</button>
+                <button class="btn-add" onclick="exportToExcel()" style="margin-left: 10px; background: #28a745;">Download Excel</button>
+                <button class="btn-secondary" onclick="resetToDefault()" style="margin-left: 10px; padding: 10px 20px; border-radius: 25px;">Reset Default</button>
+            </div>
+            <div style="margin-top: 20px;">
+                <a href="https://www.buymeacoffee.com/ivanmalinovski" target="_blank"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=ivanmalinovski&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a>
+            </div>
+        </header>
+        
+        <section class="sessions-grid" id="sessionsGrid" aria-label="Workout Sessions">
+            <!-- Sessions will be populated by JavaScript -->
+        </section>
+        
+        <section class="categories-section" aria-label="Exercise Categories">
+            <div class="categories-header">
+                <h2>Exercise Categories by Muscle Group</h2>
+                <div class="controls">
+                    <button class="btn-add" onclick="openAddCategoryModal()">+ Add Category</button>
+                </div>
+            </div>
+            <div class="categories-grid" id="categoriesGrid">
+                <!-- Categories will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <footer style="text-align: center; margin-top: 50px; color: #888; font-size: 0.9em; padding-bottom: 20px;">
+            <p>&copy; <script>document.write(new Date().getFullYear())</script> Universal Workout Split Builder. Open Source.</p>
+        </footer>
+    </main>
+    
+    <!-- Modal for adding/editing exercises -->
+    <div id="exerciseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">Add Exercise</div>
+            <div class="form-group">
+                <label for="exerciseName">Exercise Name</label>
+                <input type="text" id="exerciseName" placeholder="e.g., Bench Press">
+            </div>
+            <div class="form-group">
+                <label for="exerciseCategory">Muscle Category</label>
+                <select id="exerciseCategory">
+                    <option value="front delts">Front Delts</option>
+                    <option value="rear delts">Rear Delts</option>
+                    <option value="side delts">Side Delts</option>
+                    <option value="triceps">Triceps</option>
+                    <option value="biceps">Biceps</option>
+                    <option value="hamstrings">Hamstrings</option>
+                    <option value="quads">Quads</option>
+                    <option value="calves">Calves</option>
+                    <option value="neck">Neck</option>
+                    <option value="forearms">Forearms</option>
+                    <option value="chest">Chest</option>
+                    <option value="lats">Lats</option>
+                    <option value="upper back">Upper Back</option>
+                    <option value="lower back">Lower Back</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="exerciseSets">Sets</label>
+                <input type="number" id="exerciseSets" placeholder="3" min="1">
+            </div>
+            <div class="form-group">
+                <label for="exerciseRepsMin">Reps Min</label>
+                <input type="number" id="exerciseRepsMin" placeholder="8" min="1">
+            </div>
+            <div class="form-group">
+                <label for="exerciseRepsMax">Reps Max</label>
+                <input type="number" id="exerciseRepsMax" placeholder="12" min="1">
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" id="saveExercise">Save</button>
+                <button class="btn btn-secondary" id="cancelExercise">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for changing exercise category -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Change Exercise Category</div>
+            <div class="form-group">
+                <label for="changeCategoryExercise">Exercise</label>
+                <input type="text" id="changeCategoryExercise" readonly>
+            </div>
+            <div class="form-group">
+                <label for="newCategory">New Muscle Category</label>
+                <select id="newCategory">
+                    <option value="front delts">Front Delts</option>
+                    <option value="rear delts">Rear Delts</option>
+                    <option value="side delts">Side Delts</option>
+                    <option value="triceps">Triceps</option>
+                    <option value="biceps">Biceps</option>
+                    <option value="hamstrings">Hamstrings</option>
+                    <option value="quads">Quads</option>
+                    <option value="calves">Calves</option>
+                    <option value="neck">Neck</option>
+                    <option value="forearms">Forearms</option>
+                    <option value="chest">Chest</option>
+                    <option value="lats">Lats</option>
+                    <option value="upper back">Upper Back</option>
+                    <option value="lower back">Lower Back</option>
+                </select>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" id="saveCategory">Save</button>
+                <button class="btn btn-secondary" id="cancelCategory">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for adding new category -->
+    <div id="newCategoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Add New Category</div>
+            <div class="form-group">
+                <label for="newCategoryName">Category Name</label>
+                <input type="text" id="newCategoryName" placeholder="e.g., Abs">
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" id="saveNewCategory">Add</button>
+                <button class="btn btn-secondary" id="cancelNewCategory">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
