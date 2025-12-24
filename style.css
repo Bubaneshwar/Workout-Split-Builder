@@ -61,14 +61,16 @@
             background: #353535;
         }
         
-        .session-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #D95D2E;
-        }
+.session-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #D95D2E;
+}
         
         .session-label {
             background: #D95D2E; /* Updated to match new accent */
@@ -388,9 +390,13 @@
             opacity: 0.9;
         }
         
-        .controls {
-            margin-top: 20px;
-        }
+.controls {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
 
         .btn-add {
             background: #404040;
