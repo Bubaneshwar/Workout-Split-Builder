@@ -53,18 +53,33 @@
 </head>
 <body>
     <main class="container">
-        <header class="header">
-            <h1>Simple Workout Split Builder & Planner</h1>
-            <p>Drag & Drop to Customize Your Program - Completely Free and Open Source 👌</p>
-            <div class="controls">
+        <header class="main-header header" role="banner">
+            <div class="brand">
+                <img src="favicon-96x96.png" alt="Awesome Splits logo" class="brand-logo" />
+                <h1 class="brand-title">Awesome Splits</h1>
+            </div>
+            <p class="brand-tagline">Drag & Drop to Customize Your Program - Completely Free and Open Source 👌</p>
+            <div class="top-controls controls" role="toolbar" aria-label="Main actions">
                 <button class="btn-add" onclick="addSession()">+ Add Session</button>
                 <button class="btn-add" onclick="exportToExcel()" style="background: #28a745;">Download Excel</button>
                 <button class="btn-secondary" onclick="resetToDefault()" style="padding: 10px 20px; border-radius: 25px;">Reset Default</button>
-            </div>
-            <div style="margin-top: 20px;">
-                <a href="https://www.buymeacoffee.com/ivanmalinovski" target="_blank"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=ivanmalinovski&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a>
+                <a class="donate-link" href="https://www.buymeacoffee.com/ivanmalinovski" target="_blank" aria-label="Donate">
+                    <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=ivanmalinovski&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" />
+                </a>
             </div>
         </header>
+
+        <!-- Weeks Header (separate from main header) -->
+        <section id="weeksBar" class="weeks-header" aria-label="Weeks Navigation">
+            <div class="weeks-header-inner">
+                <div id="weeksTabs" class="weeks-tabs" role="tablist" aria-label="Weeks"></div>
+                <div class="weeks-actions" role="toolbar" aria-label="Week actions">
+                    <button class="btn-add" onclick="addWeek()">+ Add Week</button>
+                    <button class="btn-add" onclick="duplicateLastWeek()" title="Duplicate the last existing week">Duplicate Last Week</button>
+                    <button class="btn-add" onclick="deleteCurrentWeek()" title="Delete current week">Delete Week</button>
+                </div>
+            </div>
+        </section>
         
         <section class="sessions-grid" id="sessionsGrid" aria-label="Workout Sessions">
             <!-- Sessions will be populated by JavaScript -->
@@ -133,6 +148,84 @@
         </div>
     </div>
 
+    <!-- Modal: Exercise Picker (choose from library by category) -->
+    <div id="exercisePickerModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">Choose Exercise</div>
+            <div class="form-group" style="display:flex; gap:10px; align-items:center;">
+                <label for="pickerCategory" style="margin:0;">Muscle Group</label>
+                <select id="pickerCategory" style="flex:1;"></select>
+                <button class="btn btn-primary" id="pickerAddNewExerciseBtn" title="Add a new exercise to this muscle group">+ Add New Exercise</button>
+            </div>
+            <div class="exercise-library">
+                <table class="exercise-table" style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:8px; border-bottom:1px solid #444;">Exercise</th>
+                            <th style="width:150px; padding:8px; border-bottom:1px solid #444;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="exerciseTableBody">
+                        <!-- Rows populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-secondary" id="pickerCancel">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Configure selected exercise (sets/reps) -->
+    <div id="configureExerciseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Configure Exercise</div>
+            <div class="form-group">
+                <label>Exercise</label>
+                <input type="text" id="configExerciseName" readonly>
+            </div>
+            <div class="form-group">
+                <label>Muscle Category</label>
+                <input type="text" id="configExerciseCategory" readonly>
+            </div>
+            <div class="form-group">
+                <label for="configSets">Sets</label>
+                <input type="number" id="configSets" placeholder="3" min="1">
+            </div>
+            <div class="form-group">
+                <label for="configRepsMin">Reps Min</label>
+                <input type="number" id="configRepsMin" placeholder="8" min="1">
+            </div>
+            <div class="form-group">
+                <label for="configRepsMax">Reps Max</label>
+                <input type="number" id="configRepsMax" placeholder="12" min="1">
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" id="configSave">Add to Session</button>
+                <button class="btn btn-secondary" id="configCancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add exercise to library for a category -->
+    <div id="addLibraryExerciseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Add New Exercise to Library</div>
+            <div class="form-group">
+                <label>Muscle Group</label>
+                <input type="text" id="libraryCategoryReadonly" readonly>
+            </div>
+            <div class="form-group">
+                <label for="libraryExerciseName">Exercise Name</label>
+                <input type="text" id="libraryExerciseName" placeholder="e.g., Bench Press">
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" id="libraryAddBtn">Add</button>
+                <button class="btn btn-secondary" id="libraryCancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal for changing exercise category -->
     <div id="categoryModal" class="modal">
         <div class="modal-content">
@@ -182,6 +275,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script2.js"></script>
 </body>
 </html>

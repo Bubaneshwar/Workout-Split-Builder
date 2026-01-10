@@ -1,6 +1,8 @@
         // Initial workout data (Default Template)
-        const defaultWorkoutData = {
-            sessions: {
+                const defaultWorkoutData = { 
+                    weeks: [
+                        {
+                            sessions: {
                 A: [
                     { name: "Hack Squat", sets: 3, repsMin: 8, repsMax: 12, category: "quads" },
                     { name: "Lat Pulldown", sets: 3, repsMin: 8, repsMax: 12, category: "lats" },
