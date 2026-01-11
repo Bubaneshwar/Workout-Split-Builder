@@ -330,6 +330,9 @@ function openAddExerciseModal(session) {
 }
 function openExercisePicker() {
   const pickerSelect = document.getElementById('pickerCategory');
+  const pickerSearch = document.getElementById('pickerSearch');
+  if (pickerSearch) pickerSearch.value = '';
+
   if (pickerSelect) {
     pickerSelect.innerHTML = '';
     workoutData.categories.forEach(cat => {
@@ -344,21 +347,69 @@ function renderExerciseTable(category) {
   const tbody = document.getElementById('exerciseTableBody');
   if (!tbody) return;
   tbody.innerHTML = '';
-  const list = (workoutData.exerciseLibrary && workoutData.exerciseLibrary[category]) ? workoutData.exerciseLibrary[category] : [];
-  if (list.length === 0) {
+  
+  const searchInput = document.getElementById('pickerSearch');
+  const filter = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+  let results = [];
+
+  if (filter) {
+    // Search ALL categories
+    Object.keys(workoutData.exerciseLibrary).forEach(cat => {
+      const exercises = workoutData.exerciseLibrary[cat];
+      exercises.forEach(name => {
+        if (name.toLowerCase().includes(filter)) {
+          results.push({ name, category: cat });
+        }
+      });
+    });
+    // Sort results by name
+    results.sort((a,b) => a.name.localeCompare(b.name));
+  } else {
+    // Show only selected category
+    const list = (workoutData.exerciseLibrary && workoutData.exerciseLibrary[category]) ? workoutData.exerciseLibrary[category] : [];
+    results = list.map(name => ({ name, category }));
+  }
+
+  if (results.length === 0) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td style="padding:8px;">No exercises for this group yet.</td><td style="padding:8px; text-align:center;"><em>Add one with the button above</em></td>`;
+    tr.innerHTML = `<td style="padding:8px;">No exercises found.</td><td style="padding:8px; text-align:center;"><em>Add one with the button above</em></td>`;
     tbody.appendChild(tr);
     return;
   }
-  list.forEach(name => {
+
+  results.forEach(item => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="ex-name" style="text-transform: capitalize; padding:8px;">${name}</td>
-      <td style="padding:8px; text-align:center;"><button class="btn btn-primary btn-small" data-name="${name}">Select</button></td>
+      <td class="ex-name" style="padding:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="text-transform: capitalize;">${item.name}</span>
+            <span style="color:#888; font-size:0.85em; font-style:italic; margin-left:10px;">${item.category}</span>
+        </div>
+      </td>
+      <td style="padding:8px; text-align:center;">
+        <button class="btn btn-primary btn-small" data-name="${item.name}" data-category="${item.category}">Select</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+function getLastUsedExerciseStats(name) {
+  // Search backwards from latest week
+  for (let i = workoutData.weeks.length - 1; i >= 0; i--) {
+    const week = workoutData.weeks[i];
+    if (!week.sessions) continue;
+    for (const sessionKey of Object.keys(week.sessions)) {
+       const session = week.sessions[sessionKey];
+       // Find last occurrence in this session? Actually any occurrence is fine, usually consistent.
+       const ex = session.find(e => e.name === name);
+       if (ex) {
+         return { sets: ex.sets, repsMin: ex.repsMin, repsMax: ex.repsMax };
+       }
+    }
+  }
+  return null;
 }
 
 // Edit existing exercise (free-form modal reused)
@@ -588,81 +639,6 @@ function deleteCurrentWeek() {
   renderCategories();
 }
 
-// Exercise Picker modal interactions
-const pickerCategoryEl = document.getElementById('pickerCategory');
-if (pickerCategoryEl) pickerCategoryEl.addEventListener('change', (e) => renderExerciseTable(e.target.value));
-
-const pickerCancelBtn = document.getElementById('pickerCancel');
-if (pickerCancelBtn) pickerCancelBtn.addEventListener('click', () => {
-  document.getElementById('exercisePickerModal').style.display = 'none';
-});
-
-const pickerAddNewExerciseBtn = document.getElementById('pickerAddNewExerciseBtn');
-if (pickerAddNewExerciseBtn) pickerAddNewExerciseBtn.addEventListener('click', () => {
-  const cat = document.getElementById('pickerCategory').value;
-  document.getElementById('libraryCategoryReadonly').value = cat;
-  document.getElementById('libraryExerciseName').value = '';
-  document.getElementById('addLibraryExerciseModal').style.display = 'block';
-});
-
-const exerciseTableBody = document.getElementById('exerciseTableBody');
-if (exerciseTableBody) exerciseTableBody.addEventListener('click', (e) => {
-  const btn = e.target.closest('button');
-  if (!btn) return;
-  const name = btn.getAttribute('data-name');
-  if (!name) return;
-  const category = document.getElementById('pickerCategory').value;
-  pickerSelected = { name, category };
-  document.getElementById('configExerciseName').value = name;
-  document.getElementById('configExerciseCategory').value = category;
-  document.getElementById('configSets').value = '';
-  document.getElementById('configRepsMin').value = '';
-  document.getElementById('configRepsMax').value = '';
-  document.getElementById('configureExerciseModal').style.display = 'block';
-});
-
-const configCancelBtn = document.getElementById('configCancel');
-if (configCancelBtn) configCancelBtn.addEventListener('click', () => {
-  document.getElementById('configureExerciseModal').style.display = 'none';
-});
-const configSaveBtn = document.getElementById('configSave');
-if (configSaveBtn) configSaveBtn.addEventListener('click', () => {
-  const sets = parseInt(document.getElementById('configSets').value);
-  const repsMin = parseInt(document.getElementById('configRepsMin').value);
-  const repsMax = parseInt(document.getElementById('configRepsMax').value);
-  if (!pickerSelected.name || !pickerSelected.category) { alert('Please select an exercise'); return; }
-  if (!sets || !repsMin || !repsMax) { alert('Please fill in sets and reps'); return; }
-  const exercise = { name: pickerSelected.name, category: pickerSelected.category, sets, repsMin, repsMax };
-  if (!workoutData.weeks[currentWeekIndex].sessions[currentSession]) workoutData.weeks[currentWeekIndex].sessions[currentSession] = [];
-  workoutData.weeks[currentWeekIndex].sessions[currentSession].push(exercise);
-  ensureExerciseInLibrary(pickerSelected.category, pickerSelected.name);
-  saveToLocalStorage();
-  document.getElementById('configureExerciseModal').style.display = 'none';
-  document.getElementById('exercisePickerModal').style.display = 'none';
-  renderSessions();
-  renderCategories();
-});
-
-// Add-to-library modal
-const libraryCancelBtn = document.getElementById('libraryCancelBtn');
-if (libraryCancelBtn) libraryCancelBtn.addEventListener('click', () => {
-  document.getElementById('addLibraryExerciseModal').style.display = 'none';
-});
-const libraryAddBtn = document.getElementById('libraryAddBtn');
-if (libraryAddBtn) libraryAddBtn.addEventListener('click', () => {
-  const cat = document.getElementById('libraryCategoryReadonly').value;
-  const name = document.getElementById('libraryExerciseName').value.trim();
-  if (!name) { alert('Enter exercise name'); return; }
-  if (!workoutData.exerciseLibrary[cat]) workoutData.exerciseLibrary[cat] = [];
-  if (!workoutData.exerciseLibrary[cat].includes(name)) {
-    workoutData.exerciseLibrary[cat].push(name);
-    workoutData.exerciseLibrary[cat].sort((a,b)=>a.localeCompare(b));
-    saveToLocalStorage();
-  }
-  document.getElementById('addLibraryExerciseModal').style.display = 'none';
-  renderExerciseTable(document.getElementById('pickerCategory').value);
-});
-
 // Export (per week)
 function exportToExcel() {
   let html = `
@@ -799,6 +775,203 @@ function exportToExcel() {
   document.body.appendChild(downloadLink);
   downloadLink.click();
   document.body.removeChild(downloadLink);
+}
+
+function importFromExcel(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const content = e.target.result;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(content, 'text/html');
+      
+      const newWeeks = [];
+      const titles = doc.querySelectorAll('.section-title');
+      
+      // If no titles found, maybe it's a single week or old format
+      if (titles.length === 0) {
+        // Try parsing as single week
+        const sessionTable = doc.querySelector('table');
+        if (sessionTable) {
+           newWeeks.push(parseWeekTable(sessionTable));
+        } else {
+           throw new Error("No session table found");
+        }
+      } else {
+        titles.forEach(title => {
+           // Find the table immediately following this title
+           let sibling = title.nextElementSibling;
+           while(sibling && sibling.tagName !== 'TABLE') {
+             sibling = sibling.nextElementSibling;
+           }
+           if (sibling) {
+             newWeeks.push(parseWeekTable(sibling));
+           }
+        });
+      }
+
+      if (newWeeks.length > 0) {
+        if(confirm(`Found ${newWeeks.length} weeks. Import and overwrite current split?`)) {
+           workoutData.weeks = newWeeks;
+           // Reset categories to default if they seem messed up, or keep existing? 
+           // Better to keep existing categories list, but ensure we categorize imported exercises.
+           // Re-initialize library to catch any new custom exercises (mapped to Uncategorized if unknown)
+           
+           // Check for any "Uncategorized" exercises and add that category if needed
+           let hasUncategorized = false;
+           newWeeks.forEach(w => {
+             Object.values(w.sessions).forEach(s => {
+               s.forEach(ex => {
+                 if(ex.category === 'Uncategorized') hasUncategorized = true;
+               });
+             });
+           });
+           
+           if(hasUncategorized && !workoutData.categories.includes('Uncategorized')) {
+             workoutData.categories.push('Uncategorized');
+           }
+           
+           currentWeekIndex = 0;
+           initializeExerciseLibrary(); // Re-scan weeks to populate library
+           saveToLocalStorage();
+           renderWeeksTabs();
+           renderSessions();
+           renderCategories();
+           updateCategoryDropdowns();
+           alert('Import successful!');
+        }
+      } else {
+        alert('Could not parse workout data from file.');
+      }
+      
+    } catch (err) {
+      console.error(err);
+      alert('Error importing file: ' + err.message);
+    }
+    // Clear input so same file can be selected again
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function parseWeekTable(table) {
+  const sessions = {};
+  const rows = Array.from(table.querySelectorAll('tr'));
+  
+  // Row 0: Session Headers (SESSION A, SESSION B...)
+  // We need to map column indices to Session Keys
+  // The layout is: Session A (4 cols) | Spacer (1 col) | Session B (4 cols) ...
+  
+  const sessionMap = []; // [{ key: 'A', startCol: 0 }, { key: 'B', startCol: 5 } ...]
+  
+  const headerRow = rows.find(r => r.textContent.includes('SESSION'));
+  if (!headerRow) return { sessions: {} };
+  
+  const headerCells = Array.from(headerRow.children);
+  let colIndex = 0;
+  
+  headerCells.forEach(cell => {
+     const text = cell.textContent.trim(); // "SESSION A"
+     const colspan = parseInt(cell.getAttribute('colspan') || '1');
+     
+     if (text.startsWith('SESSION')) {
+       const sessionKey = text.replace('SESSION', '').trim();
+       sessionMap.push({ key: sessionKey, col: colIndex });
+       sessions[sessionKey] = [];
+     }
+     colIndex += colspan;
+     // The spacer is usually a separate td or implicit?
+     // In export: <th colspan="4">...</th> <td class="spacer"></td>
+     // The loop above iterates cells. spacer is a cell.
+  });
+
+  // Calculate distinct column indices based on the structure we know
+  // Actually, simpler: iterate the known sessionMap locations in data rows.
+  // Data starts after headers. Headers are usually 2 rows (SESSION X, then Subheaders).
+  // Find first row with data: usually row index 2 (0-based) if 0 is Session, 1 is Subheader.
+  
+  let dataStartIndex = 0;
+  rows.forEach((r, i) => {
+     if (r.children[0] && r.children[0].textContent.includes('SESSION')) return;
+     if (r.children[0] && r.children[0].textContent.includes('Exercise')) return; // subheader
+     if (dataStartIndex === 0 && i > 0) dataStartIndex = i;
+  });
+  
+  if (dataStartIndex === 0) dataStartIndex = 2; // fallback
+
+  for (let i = dataStartIndex; i < rows.length; i++) {
+     const row = rows[i];
+     // Stop if we hit the "TOTAL SETS" row
+     if (row.textContent.includes('TOTAL SETS')) break;
+     
+     const cells = Array.from(row.children);
+     
+     sessionMap.forEach(sess => {
+        // For each session, we expect 4 columns at sess.col?
+        // Wait, `headerCells` iteration above gave us the index in the *header row*.
+        // In the data row, the colspan=4 is gone, so we have 4 individual cells per session + 1 spacer cell.
+        // So Session A starts at index 0. Session B starts at index 5. Session C at 10.
+        // Formula: index = sessIndex * 5
+        
+        // Let's re-calculate precise start index based on the map order
+     });
+  }
+  
+  // Re-map column indices for data rows
+  // We know export format: 4 data cols + 1 spacer per session.
+  const columnsPerSession = 5; 
+  
+  sessionMap.forEach((sess, sessIdx) => {
+     const startCol = sessIdx * columnsPerSession;
+     
+     for (let i = dataStartIndex; i < rows.length; i++) {
+        const row = rows[i];
+        if (row.textContent.includes('TOTAL SETS')) break;
+        
+        const cells = row.children;
+        if (cells.length <= startCol + 3) continue;
+        
+        const name = cells[startCol].textContent.trim();
+        const sets = parseInt(cells[startCol + 1].textContent);
+        const repsMin = parseInt(cells[startCol + 2].textContent);
+        const repsMax = parseInt(cells[startCol + 3].textContent);
+        
+        if (name && !isNaN(sets)) {
+           // Lookup category
+           let category = 'Uncategorized';
+           
+           // 1. Try existing library
+           Object.keys(workoutData.exerciseLibrary).forEach(cat => {
+              if (workoutData.exerciseLibrary[cat].includes(name)) category = cat;
+           });
+           
+           // 2. Try default data (if library empty/reset)
+           if (category === 'Uncategorized') {
+             // scan defaults
+             defaultWorkoutData.weeks[0].sessions.A.forEach(e => { if(e.name===name) category=e.category; }); // simple check
+             // Actually, construct a flat map from default
+             if(defaultWorkoutData.weeks) {
+                defaultWorkoutData.weeks.forEach(w => Object.values(w.sessions).forEach(s => s.forEach(ex => {
+                    if(ex.name === name) category = ex.category;
+                })));
+             }
+           }
+
+           sessions[sess.key].push({
+              name,
+              sets,
+              repsMin,
+              repsMax,
+              category
+           });
+        }
+     }
+  });
+
+  return { sessions };
 }
 
 // Initialize
