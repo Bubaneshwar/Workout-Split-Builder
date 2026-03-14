@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +9,10 @@
     <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="manifest" href="site.webmanifest">
-    <meta name="description" content="Free open-source workout split builder and planner. Drag and drop exercises to customize your 6-day split or any workout routine. Organize by muscle groups and track volume.">
-    <meta name="keywords" content="workout builder, workout planner, split builder, fitness tool, exercise planner, muscle groups, volume tracker, bodybuilding, powerlifting">
+    <meta name="description"
+        content="Free open-source workout split builder and planner. Drag and drop exercises to customize your 6-day split or any workout routine. Organize by muscle groups and track volume.">
+    <meta name="keywords"
+        content="workout builder, workout planner, split builder, fitness tool, exercise planner, muscle groups, volume tracker, bodybuilding, powerlifting">
     <meta name="author" content="Ivan Malinovski">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://awesomesplits.com/">
@@ -18,14 +21,16 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://awesomesplits.com">
     <meta property="og:title" content="Simple Workout Split Builder & Planner">
-    <meta property="og:description" content="Drag & Drop to Customize Your Program - Completely Free and Open Source. Track volume and organize exercises by muscle group.">
+    <meta property="og:description"
+        content="Drag & Drop to Customize Your Program - Completely Free and Open Source. Track volume and organize exercises by muscle group.">
     <meta property="og:image" content="https://awesomesplits.com/preview-image.jpg">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://awesomesplits.com">
     <meta property="twitter:title" content="Simple Workout Split Builder & Planner">
-    <meta property="twitter:description" content="Drag & Drop to Customize Your Program - Completely Free and Open Source. Track volume and organize exercises by muscle group.">
+    <meta property="twitter:description"
+        content="Drag & Drop to Customize Your Program - Completely Free and Open Source. Track volume and organize exercises by muscle group.">
     <meta property="twitter:image" content="https://awesomesplits.com/preview-image.jpg">
 
     <!-- Schema.org Structured Data -->
@@ -51,6 +56,7 @@
     </script>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <main class="container">
         <header class="main-header header" role="banner">
@@ -61,12 +67,33 @@
             <p class="brand-tagline">Drag & Drop to Customize Your Program - Completely Free and Open Source 👌</p>
             <div class="top-controls controls" role="toolbar" aria-label="Main actions">
                 <button class="btn-add" onclick="addSession()">+ Add Session</button>
-                <button class="btn-add" onclick="exportToExcel()" style="background: #28a745;">Download Excel</button>
-                <button class="btn-add" onclick="document.getElementById('importFile').click()" style="background: #17a2b8;">Import Excel</button>
-                <input type="file" id="importFile" accept=".xls,.html,.htm" style="display: none;" onchange="importFromExcel(this)">
-                <button class="btn-secondary" onclick="resetToDefault()" style="padding: 10px 20px; border-radius: 25px;">Reset Default</button>
-                <a class="donate-link" href="https://www.buymeacoffee.com/ivanmalinovski" target="_blank" aria-label="Donate">
-                    <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=ivanmalinovski&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" />
+                <button class="btn-add" onclick="openAddLibraryExerciseModal()">+ Add Exercise To Library</button>
+                <div class="dropdown">
+                    <button class="btn-add dropbtn" style="background: #2da149;">Download ▼</button>
+                    <div class="dropdown-content">
+                        <a href="javascript:void(0)" onclick="exportToCSV()">CSV File (.csv)</a>
+                        <a href="javascript:void(0)" onclick="exportToExcel()">Excel File (.xls)</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn-add dropbtn" style="background: #1994a6;">Import ▼</button>
+                    <div class="dropdown-content">
+                        <a href="javascript:void(0)" onclick="document.getElementById('importCSVFile').click()">CSV File
+                            (.csv)</a>
+                        <a href="javascript:void(0)" onclick="document.getElementById('importFile').click()">Excel File
+                            (.xls)</a>
+                    </div>
+                </div>
+                <input type="file" id="importCSVFile" accept=".csv" style="display: none;"
+                    onchange="importFromCSV(this)">
+                <input type="file" id="importFile" accept=".xls,.html,.htm" style="display: none;"
+                    onchange="importFromExcel(this)">
+                <button class="btn-secondary" onclick="resetToDefault()"
+                    style="padding: 10px 20px; border-radius: 25px;">Reset Default</button>
+                <a class="donate-link" href="https://www.buymeacoffee.com/ivanmalinovski" target="_blank"
+                    aria-label="Donate">
+                    <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=ivanmalinovski&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"
+                        alt="Buy me a coffee" />
                 </a>
             </div>
         </header>
@@ -77,16 +104,18 @@
                 <div id="weeksTabs" class="weeks-tabs" role="tablist" aria-label="Weeks"></div>
                 <div class="weeks-actions" role="toolbar" aria-label="Week actions">
                     <button class="btn-add" onclick="addWeek()">+ Add Week</button>
-                    <button class="btn-add" onclick="duplicateLastWeek()" title="Duplicate the last existing week">Duplicate Last Week</button>
-                    <button class="btn-add" onclick="deleteCurrentWeek()" title="Delete current week">Delete Week</button>
+                    <button class="btn-add" onclick="duplicateLastWeek()"
+                        title="Duplicate the last existing week">Duplicate Last Week</button>
+                    <button class="btn-add" onclick="deleteCurrentWeek()" title="Delete current week">Delete
+                        Week</button>
                 </div>
             </div>
         </section>
-        
+
         <section class="sessions-grid" id="sessionsGrid" aria-label="Workout Sessions">
             <!-- Sessions will be populated by JavaScript -->
         </section>
-        
+
         <section class="categories-section" aria-label="Exercise Categories">
             <div class="categories-header">
                 <h2>Exercise Categories by Muscle Group</h2>
@@ -100,10 +129,12 @@
         </section>
 
         <footer style="text-align: center; margin-top: 50px; color: #888; font-size: 0.9em; padding-bottom: 20px;">
-            <p>&copy; <script>document.write(new Date().getFullYear())</script> Universal Workout Split Builder. Open Source.</p>
+            <p>&copy;
+                <script>document.write(new Date().getFullYear())</script> Universal Workout Split Builder. Open Source.
+            </p>
         </footer>
     </main>
-    
+
     <!-- Modal for adding/editing exercises -->
     <div id="exerciseModal" class="modal">
         <div class="modal-content">
@@ -157,10 +188,10 @@
             <div class="form-group" style="display:flex; gap:10px; align-items:center;">
                 <label for="pickerCategory" style="margin:0;">Muscle Group</label>
                 <select id="pickerCategory" style="flex:1;"></select>
-                <button class="btn btn-primary" id="pickerAddNewExerciseBtn" title="Add a new exercise to this muscle group">+ Add New Exercise</button>
             </div>
             <div class="form-group">
-                <input type="text" id="pickerSearch" placeholder="Search in this category..." style="width: 100%; padding: 8px; box-sizing: border-box; background: #353535; border: 1px solid #444; color: white;">
+                <input type="text" id="pickerSearch" placeholder="Search in this category..."
+                    style="width: 100%; padding: 8px; box-sizing: border-box; background: #353535; border: 1px solid #444; color: white;">
             </div>
             <div class="exercise-library">
                 <table class="exercise-table" style="width:100%; border-collapse: collapse;">
@@ -175,8 +206,10 @@
                     </tbody>
                 </table>
             </div>
-            <div class="form-buttons">
-                <button class="btn btn-secondary" id="pickerCancel">Close</button>
+            <div class="form-buttons" style="display:flex; justify-content:space-between; width:100%;">
+                <button class="btn btn-primary" id="pickerCreateCustomBtn"
+                    style="background:#2da149; border-color:#2da149;">+ Create Custom Exercise</button>
+                <button class="btn btn-secondary" id="pickerCancel" type="button" onclick="closeExercisePicker()">Close</button>
             </div>
         </div>
     </div>
@@ -217,8 +250,8 @@
         <div class="modal-content">
             <div class="modal-header">Add New Exercise to Library</div>
             <div class="form-group">
-                <label>Muscle Group</label>
-                <input type="text" id="libraryCategoryReadonly" readonly>
+                <label for="libraryCategorySelect">Muscle Group</label>
+                <select id="libraryCategorySelect"></select>
             </div>
             <div class="form-group">
                 <label for="libraryExerciseName">Exercise Name</label>
@@ -226,7 +259,8 @@
             </div>
             <div class="form-buttons">
                 <button class="btn btn-primary" id="libraryAddBtn">Add</button>
-                <button class="btn btn-secondary" id="libraryCancelBtn">Cancel</button>
+                <button class="btn btn-secondary" id="libraryCancelBtn" type="button"
+                    onclick="document.getElementById('addLibraryExerciseModal').style.display='none'">Cancel</button>
             </div>
         </div>
     </div>
@@ -280,6 +314,34 @@
         </div>
     </div>
 
+    <!-- Modal for adding a library exercise to one or more sessions -->
+    <div id="addToSessionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="addToSessionTitle">Add to Session</div>
+            <p style="color:#aaa; font-size:0.9em; margin-bottom:16px;">Select which sessions to add this exercise to:</p>
+            <div id="addToSessionCheckboxes" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;"></div>
+            <div class="form-group" style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label for="addToSessionSets">Sets</label>
+                    <input type="number" id="addToSessionSets" placeholder="3" min="1" value="3">
+                </div>
+                <div style="flex:1;">
+                    <label for="addToSessionRepsMin">Reps Min</label>
+                    <input type="number" id="addToSessionRepsMin" placeholder="8" min="1" value="8">
+                </div>
+                <div style="flex:1;">
+                    <label for="addToSessionRepsMax">Reps Max</label>
+                    <input type="number" id="addToSessionRepsMax" placeholder="12" min="1" value="12">
+                </div>
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" id="addToSessionSaveBtn">Add to Selected</button>
+                <button class="btn btn-secondary" id="addToSessionCancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script2.js"></script>
 </body>
+
 </html>

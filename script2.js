@@ -8,50 +8,74 @@ const defaultWorkoutData = {
           { name: "Lat Pulldown", sets: 3, repsMin: 8, repsMax: 12, category: "lats" },
           { name: "Leg Extension", sets: 2, repsMin: 10, repsMax: 15, category: "quads" },
           { name: "Chest Supported Row", sets: 3, repsMin: 8, repsMax: 12, category: "upper back" },
-          { name: "EZ-Bar Curl", sets: 3, repsMin: 10, repsMax: 15, category: "biceps" }
+          { name: "EZ-Bar Curl", sets: 3, repsMin: 10, repsMax: 15, category: "biceps" },
+          { name: "Wrist Curl", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
+          { name: "Wrist Extension", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
+          { name: "Neck Extension", sets: 3, repsMin: 15, repsMax: 20, category: "neck" },
+          { name: "Reverse Cable Fly", sets: 4, repsMin: 8, repsMax: 12, category: "rear delts" }
         ],
         B: [
-          { name: "RDL", sets: 3, repsMin: 5, repsMax: 8, category: "hamstrings" },
           { name: "Incline Machine Press", sets: 3, repsMin: 8, repsMax: 12, category: "chest" },
-          { name: "Cable Fly", sets: 3, repsMin: 10, repsMax: 15, category: "chest" },
-          { name: "Lying Leg Curls", sets: 2, repsMin: 10, repsMax: 15, category: "hamstrings" },
           { name: "Overhead Tricep Extension", sets: 2, repsMin: 10, repsMax: 15, category: "triceps" },
-          { name: "Machine Lateral Raise", sets: 3, repsMin: 10, repsMax: 15, category: "side delts" }
+          { name: "Cable Fly", sets: 3, repsMin: 10, repsMax: 15, category: "chest" },
+          { name: "Machine Lateral Raise", sets: 3, repsMin: 10, repsMax: 15, category: "side delts" },
+          { name: "Back Extensions", sets: 2, repsMin: 10, repsMax: 15, category: "lower back" },
+          { name: "Seated Leg Curl", sets: 3, repsMin: 8, repsMax: 12, category: "hamstrings" },
+          { name: "Standing Leg Curl", sets: 2, repsMin: 8, repsMax: 12, category: "hamstrings" },
+          { name: "Neck Curl", sets: 3, repsMin: 15, repsMax: 20, category: "neck" },
+          { name: "Wrist Curl", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
+          { name: "Wrist Extension", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" }
         ],
         C: [
           { name: "Bulgarian Split Squats (Smith Machine)", sets: 3, repsMin: 8, repsMax: 12, category: "quads" },
           { name: "Wide-Grip Pulldown", sets: 3, repsMin: 8, repsMax: 12, category: "lats" },
           { name: "Machine Shoulder Press", sets: 3, repsMin: 8, repsMax: 12, category: "front delts" },
           { name: "Lat Prayer", sets: 2, repsMin: 10, repsMax: 15, category: "lats" },
-          { name: "Hammer Curl", sets: 3, repsMin: 10, repsMax: 15, category: "biceps" }
+          { name: "Hammer Curl", sets: 3, repsMin: 10, repsMax: 15, category: "biceps" },
+          { name: "Wrist Curl", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
+          { name: "Wrist Extension", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
+          { name: "Neck Extension", sets: 3, repsMin: 15, repsMax: 20, category: "neck" },
+          { name: "Dumbbell Shrug", sets: 4, repsMin: 12, repsMax: 15, category: "traps" }
         ],
         D: [
-          { name: "Seated Leg Curl", sets: 3, repsMin: 8, repsMax: 12, category: "hamstrings" },
           { name: "Cable Row", sets: 3, repsMin: 8, repsMax: 12, category: "upper back" },
           { name: "Slight Incline Dumbbell Press", sets: 3, repsMin: 8, repsMax: 12, category: "chest" },
           { name: "Overhead Tricep Extension", sets: 2, repsMin: 8, repsMax: 12, category: "triceps" },
-          { name: "Lateral Raise Machine", sets: 2, repsMin: 8, repsMax: 12, category: "side delts" }
+          { name: "Lateral Raise Machine", sets: 2, repsMin: 8, repsMax: 12, category: "side delts" },
+          { name: "Wrist Curl", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
+          { name: "Wrist Extension", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
+          { name: "Neck Curl", sets: 3, repsMin: 15, repsMax: 20, category: "neck" },
+          { name: "Reverse Machine Fly", sets: 4, repsMin: 8, repsMax: 12, category: "rear delts" }
         ],
         E: [
-          { name: "Squat", sets: 3, repsMin: 6, repsMax: 8, category: "quads" },
+          { name: "Leg Press", sets: 3, repsMin: 6, repsMax: 8, category: "quads" },
           { name: "Close Grip Lat Pulldown", sets: 3, repsMin: 10, repsMax: 15, category: "lats" },
           { name: "Seated Dumbbell Press", sets: 2, repsMin: 10, repsMax: 15, category: "front delts" },
-          { name: "Dumbbell Curl", sets: 3, repsMin: 8, repsMax: 12, category: "biceps" }
+          { name: "Dumbbell Curl", sets: 3, repsMin: 8, repsMax: 12, category: "biceps" },
+          { name: "Wrist Curl", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
+          { name: "Wrist Extension", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
+          { name: "Seated Leg Curl", sets: 3, repsMin: 8, repsMax: 12, category: "hamstrings" },
+          { name: "Standing Leg Curl", sets: 3, repsMin: 8, repsMax: 12, category: "hamstrings" },
+          { name: "Neck Extension", sets: 3, repsMin: 15, repsMax: 20, category: "neck" }
         ],
         F: [
           { name: "Back Extensions", sets: 2, repsMin: 10, repsMax: 15, category: "lower back" },
-          { name: "Flat/Decline Machine Press", sets: 3, repsMin: 6, repsMax: 8, category: "chest" },
-          { name: "Lying Leg Curl", sets: 3, repsMin: 8, repsMax: 12, category: "hamstrings" },
-          { name: "Chest Supported Dumbbell Row", sets: 3, repsMin: 8, repsMax: 12, category: "upper back" },
+          { name: "Chest Supported Row", sets: 3, repsMin: 8, repsMax: 12, category: "upper back" },
           { name: "Overhead Tricep Extension", sets: 2, repsMin: 10, repsMax: 15, category: "triceps" },
-          { name: "Dumbbell Lateral Raise", sets: 2, repsMin: 10, repsMax: 15, category: "side delts" }
+          { name: "Dumbbell Lateral Raise", sets: 2, repsMin: 10, repsMax: 15, category: "side delts" },
+          { name: "Machine Fly", sets: 3, repsMin: 8, repsMax: 12, category: "chest" },
+          { name: "Neck Curl", sets: 3, repsMin: 15, repsMax: 20, category: "neck" },
+          { name: "Wrist Curl", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
+          { name: "Wrist Extension", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
+          { name: "Dumbbell Shrug", sets: 4, repsMin: 12, repsMax: 15, category: "traps" }
         ]
       }
     }
   ],
-  categories: ["front delts", "rear delts", "side delts", "triceps", "biceps", "hamstrings", "quads", "calves", "neck", "forearms", "chest", "lats", "upper back", "lower back"],
+  categories: ["front delts", "rear delts", "side delts", "triceps", "biceps", "hamstrings", "quads", "calves", "neck", "forearms", "chest", "lats", "upper back", "lower back", "traps"],
   exerciseLibrary: {}
 };
+
 
 // Load from localStorage or use default
 let workoutData = JSON.parse(localStorage.getItem('workoutSplitData')) || JSON.parse(JSON.stringify(defaultWorkoutData));
@@ -73,6 +97,8 @@ let currentSession = null;
 let currentExerciseIndex = null; // for editing
 let currentExerciseName = null; // for category change
 let pickerSelected = { name: null, category: null };
+let swapMode = false;       // true when picker is opened for swapping
+let swapExerciseIndex = null; // index of the exercise being swapped
 
 // Save to localStorage helper
 function saveToLocalStorage() {
@@ -97,7 +123,7 @@ function initializeExerciseLibrary() {
     });
   });
   Object.keys(setMap).forEach(cat => {
-    workoutData.exerciseLibrary[cat] = Array.from(setMap[cat]).sort((a,b)=>a.localeCompare(b));
+    workoutData.exerciseLibrary[cat] = Array.from(setMap[cat]).sort((a, b) => a.localeCompare(b));
   });
 }
 
@@ -145,6 +171,7 @@ function renderSessions() {
               <div class="exercise-category">${ex.category}</div>
             </div>
             <div class="exercise-controls">
+              <button class="swap-btn" onclick="openSwapExercise('${session}', ${idx})" title="Swap exercise">Swap</button>
               <button class="edit-btn" onclick="editExercise('${session}', ${idx})">Edit</button>
               <button class="delete-btn" onclick="deleteExercise('${session}', ${idx})">Delete</button>
             </div>
@@ -180,28 +207,114 @@ function renderCategories() {
       </div>
       <ul class="category-exercises">
         ${exercises.map(ex => {
-          const exerciseVolume = getExerciseVolume(ex.name);
-          return `
+      const exerciseVolume = getExerciseVolume(ex.name);
+      const safeName = ex.name.replace(/'/g, "\\'");
+      return `
             <li class="category-exercise-item">
               <div class="category-exercise-info">
                 <span class="exercise-volume">${exerciseVolume}</span>
                 <span>${ex.name}</span>
               </div>
-              <button class="edit-category-btn" onclick="openCategoryModal('${ex.name.replace(/'/g, "\\'")}', '${category}')">Change</button>
+              <div class="category-exercise-actions">
+                <button class="add-to-session-btn" onclick="openAddToSessionModal('${safeName}', '${ex.category}')">Add to</button>
+                <button class="edit-category-btn" onclick="openCategoryModal('${safeName}', '${category}')">Change</button>
+                <button class="delete-category-exercise-btn" onclick="deleteCategoryExercise('${safeName}', '${category}')" title="Delete exercise">×</button>
+              </div>
             </li>
           `;
-        }).join('')}
+    }).join('')}
       </ul>
+      <button class="btn-add-category-exercise" onclick="openAddExerciseToCategory('${category}')">+ Add Exercise</button>
     `;
 
     grid.appendChild(card);
   });
 }
 
+// Open the library modal pre-filled & locked to a specific category
+function openAddExerciseToCategory(category) {
+  updateCategoryDropdowns();
+
+  const modal = document.getElementById('addLibraryExerciseModal');
+  const catSelect = document.getElementById('libraryCategorySelect');
+  const nameInput = document.getElementById('libraryExerciseName');
+  const modalHeader = modal.querySelector('.modal-header');
+
+  // Lock the category dropdown to the clicked card's category
+  if (catSelect) {
+    catSelect.value = category;
+    catSelect.disabled = true;
+    catSelect.dataset.lockedCategory = category;
+  }
+  if (modalHeader) modalHeader.textContent = `Add Exercise to "${category}"`;
+  if (nameInput) nameInput.value = '';
+
+  if (modal) modal.style.display = 'block';
+  if (nameInput) setTimeout(() => nameInput.focus(), 0);
+}
+
+// Delete an exercise from the library and all sessions across all weeks
+function deleteCategoryExercise(name, category) {
+  if (!confirm(`Delete "${name}" from the ${category} category? This will also remove it from all sessions.`)) return;
+
+  // Remove from exercise library
+  if (workoutData.exerciseLibrary && workoutData.exerciseLibrary[category]) {
+    workoutData.exerciseLibrary[category] = workoutData.exerciseLibrary[category].filter(n => n !== name);
+  }
+
+  // Remove from all sessions across all weeks
+  workoutData.weeks.forEach(week => {
+    Object.keys(week.sessions || {}).forEach(sessionKey => {
+      week.sessions[sessionKey] = week.sessions[sessionKey].filter(ex => ex.name !== name);
+    });
+  });
+
+  saveToLocalStorage();
+  renderSessions();
+  renderCategories();
+}
+
+// ---- Add to Session modal ----
+let addToSessionExercise = { name: null, category: null };
+
+function openAddToSessionModal(name, category) {
+  addToSessionExercise = { name, category };
+
+  // Populate title
+  const title = document.getElementById('addToSessionTitle');
+  if (title) title.textContent = `Add "${name}" to Sessions`;
+
+  // Pre-fill sets/reps from last used stats
+  const stats = getLastUsedExerciseStats(name);
+  document.getElementById('addToSessionSets').value = stats && stats.sets ? stats.sets : 3;
+  document.getElementById('addToSessionRepsMin').value = stats && stats.repsMin ? stats.repsMin : 8;
+  document.getElementById('addToSessionRepsMax').value = stats && stats.repsMax ? stats.repsMax : 12;
+
+  // Build session checkboxes
+  const container = document.getElementById('addToSessionCheckboxes');
+  container.innerHTML = '';
+  const sessionsObj = workoutData.weeks[currentWeekIndex].sessions || {};
+  Object.keys(sessionsObj).forEach(sessionKey => {
+    const alreadyIn = sessionsObj[sessionKey].some(ex => ex.name === name);
+    const label = document.createElement('label');
+    label.style.cssText = 'display:flex; align-items:center; gap:8px; cursor:pointer; color:#ccc; font-size:0.95em;';
+    label.innerHTML = `
+      <input type="checkbox" value="${sessionKey}" ${alreadyIn ? 'checked disabled' : ''}
+        style="width:16px; height:16px; accent-color:#D95D2E; cursor:pointer;">
+      <span>Session ${sessionKey}${alreadyIn ? ' <em style="color:#888;font-size:0.85em;">(already added)</em>' : ''}</span>
+    `;
+    container.appendChild(label);
+  });
+
+  document.getElementById('addToSessionModal').style.display = 'block';
+}
+
 function getAllExercisesByCategory(category) {
-  // Collect unique by name across ALL weeks
+  // Collect unique by name across ALL weeks (sessions) AND the exercise library
   const seen = new Set();
   const list = [];
+
+  // First: pull from sessions (so we have real sets/reps data)
   workoutData.weeks.forEach(week => {
     Object.values(week.sessions || {}).forEach(session => {
       session.forEach(ex => {
@@ -212,6 +325,16 @@ function getAllExercisesByCategory(category) {
       });
     });
   });
+
+  // Second: also include library-only exercises (not yet in any session)
+  const libraryList = (workoutData.exerciseLibrary && workoutData.exerciseLibrary[category]) || [];
+  libraryList.forEach(name => {
+    if (!seen.has(name)) {
+      seen.add(name);
+      list.push({ name, category, sets: 0, repsMin: 0, repsMax: 0 });
+    }
+  });
+
   return list;
 }
 
@@ -243,7 +366,7 @@ function ensureExerciseInLibrary(category, name) {
   if (!workoutData.exerciseLibrary[category]) workoutData.exerciseLibrary[category] = [];
   if (!workoutData.exerciseLibrary[category].includes(name)) {
     workoutData.exerciseLibrary[category].push(name);
-    workoutData.exerciseLibrary[category].sort((a,b)=>a.localeCompare(b));
+    workoutData.exerciseLibrary[category].sort((a, b) => a.localeCompare(b));
   }
 }
 
@@ -328,6 +451,79 @@ function openAddExerciseModal(session) {
   currentExerciseIndex = null;
   openExercisePicker();
 }
+
+function closeExercisePicker() {
+  const modal = document.getElementById('exercisePickerModal');
+  if (modal) modal.style.display = 'none';
+
+  // Always unlock category dropdown and reset header when closing
+  const pickerSelect = document.getElementById('pickerCategory');
+  if (pickerSelect) pickerSelect.disabled = false;
+  const pickerHeader = document.querySelector('#exercisePickerModal .modal-header');
+  if (pickerHeader) pickerHeader.textContent = 'Choose Exercise';
+
+  // Reset swap mode
+  swapMode = false;
+  swapExerciseIndex = null;
+}
+
+// Open picker in swap mode — locked to the exercise's category
+function openSwapExercise(session, index) {
+  const ex = workoutData.weeks[currentWeekIndex].sessions[session][index];
+  currentSession = session;
+  swapMode = true;
+  swapExerciseIndex = index;
+
+  const pickerSelect = document.getElementById('pickerCategory');
+  const pickerSearch = document.getElementById('pickerSearch');
+  if (pickerSearch) pickerSearch.value = '';
+
+  if (pickerSelect) {
+    pickerSelect.innerHTML = '';
+    workoutData.categories.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat; opt.textContent = cat; pickerSelect.appendChild(opt);
+    });
+    // Pre-select and lock to the exercise's category
+    pickerSelect.value = ex.category;
+    pickerSelect.disabled = true;
+    renderExerciseTable(ex.category);
+  }
+
+  // Update picker header to communicate swap intent
+  const pickerHeader = document.querySelector('#exercisePickerModal .modal-header');
+  if (pickerHeader) pickerHeader.textContent = `Swap "${ex.name}" → choose replacement`;
+
+  document.getElementById('exercisePickerModal').style.display = 'block';
+}
+
+function openAddLibraryExerciseModal(prefillCategory = '') {
+  // Keep category list in sync (supports custom categories).
+  updateCategoryDropdowns();
+
+  const modal = document.getElementById('addLibraryExerciseModal');
+  const catSelect = document.getElementById('libraryCategorySelect');
+  const nameInput = document.getElementById('libraryExerciseName');
+  const modalHeader = modal ? modal.querySelector('.modal-header') : null;
+
+  // Always reset lock state when opened from header button
+  if (catSelect) {
+    catSelect.disabled = false;
+    delete catSelect.dataset.lockedCategory;
+  }
+  if (modalHeader) modalHeader.textContent = 'Add New Exercise to Library';
+
+  const pickerCategory = document.getElementById('pickerCategory');
+  const desiredCategory = prefillCategory || (pickerCategory ? pickerCategory.value : '');
+
+  if (catSelect && desiredCategory && workoutData.categories.includes(desiredCategory)) {
+    catSelect.value = desiredCategory;
+  }
+  if (nameInput) nameInput.value = '';
+
+  if (modal) modal.style.display = 'block';
+  if (nameInput) setTimeout(() => nameInput.focus(), 0);
+}
 function openExercisePicker() {
   const pickerSelect = document.getElementById('pickerCategory');
   const pickerSearch = document.getElementById('pickerSearch');
@@ -347,7 +543,7 @@ function renderExerciseTable(category) {
   const tbody = document.getElementById('exerciseTableBody');
   if (!tbody) return;
   tbody.innerHTML = '';
-  
+
   const searchInput = document.getElementById('pickerSearch');
   const filter = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
@@ -364,7 +560,7 @@ function renderExerciseTable(category) {
       });
     });
     // Sort results by name
-    results.sort((a,b) => a.name.localeCompare(b.name));
+    results.sort((a, b) => a.name.localeCompare(b.name));
   } else {
     // Show only selected category
     const list = (workoutData.exerciseLibrary && workoutData.exerciseLibrary[category]) ? workoutData.exerciseLibrary[category] : [];
@@ -373,7 +569,7 @@ function renderExerciseTable(category) {
 
   if (results.length === 0) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td style="padding:8px;">No exercises found.</td><td style="padding:8px; text-align:center;"><em>Add one with the button above</em></td>`;
+    tr.innerHTML = `<td style="padding:8px;">No exercises found.</td><td style="padding:8px; text-align:center;"><em>Add one from the header</em></td>`;
     tbody.appendChild(tr);
     return;
   }
@@ -401,12 +597,12 @@ function getLastUsedExerciseStats(name) {
     const week = workoutData.weeks[i];
     if (!week.sessions) continue;
     for (const sessionKey of Object.keys(week.sessions)) {
-       const session = week.sessions[sessionKey];
-       // Find last occurrence in this session? Actually any occurrence is fine, usually consistent.
-       const ex = session.find(e => e.name === name);
-       if (ex) {
-         return { sets: ex.sets, repsMin: ex.repsMin, repsMax: ex.repsMax };
-       }
+      const session = week.sessions[sessionKey];
+      // Find last occurrence in this session? Actually any occurrence is fine, usually consistent.
+      const ex = session.find(e => e.name === name);
+      if (ex) {
+        return { sets: ex.sets, repsMin: ex.repsMin, repsMax: ex.repsMax };
+      }
     }
   }
   return null;
@@ -539,7 +735,7 @@ function deleteCategory(category) {
 }
 
 function updateCategoryDropdowns() {
-  const selects = ['exerciseCategory', 'newCategory', 'pickerCategory'];
+  const selects = ['exerciseCategory', 'newCategory', 'pickerCategory', 'libraryCategorySelect'];
   selects.forEach(id => {
     const select = document.getElementById(id);
     if (!select) return;
@@ -594,7 +790,7 @@ function renderWeeksTabs() {
 function newEmptyWeek() {
   // Create default 7 sessions (A-G)
   const sessions = {};
-  const labels = ['A','B','C','D','E','F','G'];
+  const labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
   labels.forEach(l => sessions[l] = []);
   return { sessions };
 }
@@ -637,6 +833,144 @@ function deleteCurrentWeek() {
   renderWeeksTabs();
   renderSessions();
   renderCategories();
+}
+
+// Export/Import CSV
+function exportToCSV() {
+  let csvContent = "Week,Session,Exercise,Sets,RepsMin,RepsMax,Category\n";
+  workoutData.weeks.forEach((week, wIdx) => {
+    Object.keys(week.sessions || {}).forEach(sessionKey => {
+      (week.sessions[sessionKey] || []).forEach(ex => {
+        const row = [
+          wIdx + 1,
+          sessionKey,
+          `"${(ex.name || "").replace(/"/g, '""')}"`,
+          ex.sets || 0,
+          ex.repsMin || 0,
+          ex.repsMax || 0,
+          `"${(ex.category || "").replace(/"/g, '""')}"`
+        ];
+        csvContent += row.join(",") + "\n";
+      });
+    });
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const downloadLink = document.createElement('a');
+  downloadLink.href = url;
+  downloadLink.download = 'workout_split_plan.csv';
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+}
+
+function importFromCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+
+      if (lines.length === 0) throw new Error("File is empty");
+
+      const header = lines[0].toLowerCase();
+      if (!header.includes("week") || !header.includes("session")) {
+        throw new Error("Invalid CSV format. Please use the exported CSV format.");
+      }
+
+      const newWeeks = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i];
+        const values = [];
+        let inQuotes = false;
+        let currentStr = "";
+        for (let j = 0; j < line.length; j++) {
+          const char = line[j];
+          if (char === '"' && line[j + 1] === '"') {
+            currentStr += '"';
+            j++;
+          } else if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            values.push(currentStr.trim());
+            currentStr = "";
+          } else {
+            currentStr += char;
+          }
+        }
+        values.push(currentStr.trim());
+
+        if (values.length < 7) continue;
+
+        const weekIdxStr = values[0].replace(/["']/g, "");
+        const weekIdxMatches = weekIdxStr.match(/\d+/);
+        const weekIdx = weekIdxMatches ? parseInt(weekIdxMatches[0]) - 1 : parseInt(weekIdxStr) - 1;
+
+        const session = values[1].replace(/["']/g, "");
+        const name = values[2].replace(/^"|"$/g, "");
+        const sets = parseInt(values[3]);
+        const repsMin = parseInt(values[4]);
+        const repsMax = parseInt(values[5]);
+        const category = values[6].replace(/^"|"$/g, "");
+
+        if (isNaN(weekIdx) || weekIdx < 0) continue;
+
+        while (newWeeks.length <= weekIdx) {
+          const newWeek = { sessions: {} };
+          newWeeks.push(newWeek);
+        }
+
+        if (!newWeeks[weekIdx].sessions[session]) {
+          newWeeks[weekIdx].sessions[session] = [];
+        }
+
+        if (name && !isNaN(sets)) {
+          newWeeks[weekIdx].sessions[session].push({
+            name, sets, repsMin: isNaN(repsMin) ? 0 : repsMin, repsMax: isNaN(repsMax) ? 0 : repsMax, category: category || 'Uncategorized'
+          });
+        }
+      }
+
+      if (newWeeks.length > 0) {
+        if (confirm('Import successful! Override current split?')) {
+          workoutData.weeks = newWeeks;
+
+          let hasCategories = new Set(workoutData.categories);
+          newWeeks.forEach(w => {
+            Object.values(w.sessions).forEach(s => {
+              s.forEach(ex => {
+                if (!hasCategories.has(ex.category)) {
+                  workoutData.categories.push(ex.category);
+                  hasCategories.add(ex.category);
+                }
+              });
+            });
+          });
+
+          currentWeekIndex = 0;
+          initializeExerciseLibrary();
+          saveToLocalStorage();
+          renderWeeksTabs();
+          renderSessions();
+          renderCategories();
+          updateCategoryDropdowns();
+        }
+      } else {
+        alert('Could not parse workout data from CSV file.');
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert('Error importing file: ' + err.message);
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
 }
 
 // Export (per week)
@@ -703,7 +1037,7 @@ function exportToExcel() {
     });
     html += `</colgroup>`;
     html += `<thead>`;
-    html += `<tr>`; 
+    html += `<tr>`;
     sessions.forEach(session => { html += `<th colspan="4">SESSION ${session}</th><td class="spacer"></td>`; });
     html += `</tr>`;
     html += `<tr>`;
@@ -756,7 +1090,7 @@ function exportToExcel() {
     html += `<table>`;
     html += `<colgroup><col style="width: 260px;"><col style="width: 100px;"></colgroup>`;
     html += `<thead><tr><th>Muscle Group</th><th>Total Sets</th></tr></thead><tbody>`;
-    const sortedCategories = Object.keys(categoryVolumes).sort((a,b)=>categoryVolumes[b]-categoryVolumes[a]);
+    const sortedCategories = Object.keys(categoryVolumes).sort((a, b) => categoryVolumes[b] - categoryVolumes[a]);
     sortedCategories.forEach(cat => {
       if (categoryVolumes[cat] > 0) html += `<tr><td class="ex-name" style="text-transform: capitalize;">${cat}</td><td>${categoryVolumes[cat]}</td></tr>`;
     });
@@ -782,71 +1116,71 @@ function importFromExcel(input) {
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = function (e) {
     try {
       const content = e.target.result;
       const parser = new DOMParser();
       const doc = parser.parseFromString(content, 'text/html');
-      
+
       const newWeeks = [];
       const titles = doc.querySelectorAll('.section-title');
-      
+
       // If no titles found, maybe it's a single week or old format
       if (titles.length === 0) {
         // Try parsing as single week
         const sessionTable = doc.querySelector('table');
         if (sessionTable) {
-           newWeeks.push(parseWeekTable(sessionTable));
+          newWeeks.push(parseWeekTable(sessionTable));
         } else {
-           throw new Error("No session table found");
+          throw new Error("No session table found");
         }
       } else {
         titles.forEach(title => {
-           // Find the table immediately following this title
-           let sibling = title.nextElementSibling;
-           while(sibling && sibling.tagName !== 'TABLE') {
-             sibling = sibling.nextElementSibling;
-           }
-           if (sibling) {
-             newWeeks.push(parseWeekTable(sibling));
-           }
+          // Find the table immediately following this title
+          let sibling = title.nextElementSibling;
+          while (sibling && sibling.tagName !== 'TABLE') {
+            sibling = sibling.nextElementSibling;
+          }
+          if (sibling) {
+            newWeeks.push(parseWeekTable(sibling));
+          }
         });
       }
 
       if (newWeeks.length > 0) {
-        if(confirm(`Found ${newWeeks.length} weeks. Import and overwrite current split?`)) {
-           workoutData.weeks = newWeeks;
-           // Reset categories to default if they seem messed up, or keep existing? 
-           // Better to keep existing categories list, but ensure we categorize imported exercises.
-           // Re-initialize library to catch any new custom exercises (mapped to Uncategorized if unknown)
-           
-           // Check for any "Uncategorized" exercises and add that category if needed
-           let hasUncategorized = false;
-           newWeeks.forEach(w => {
-             Object.values(w.sessions).forEach(s => {
-               s.forEach(ex => {
-                 if(ex.category === 'Uncategorized') hasUncategorized = true;
-               });
-             });
-           });
-           
-           if(hasUncategorized && !workoutData.categories.includes('Uncategorized')) {
-             workoutData.categories.push('Uncategorized');
-           }
-           
-           currentWeekIndex = 0;
-           initializeExerciseLibrary(); // Re-scan weeks to populate library
-           saveToLocalStorage();
-           renderWeeksTabs();
-           renderSessions();
-           renderCategories();
-           updateCategoryDropdowns();
-           alert('Import successful!');
+        if (confirm(`Found ${newWeeks.length} weeks. Import and overwrite current split?`)) {
+          workoutData.weeks = newWeeks;
+          // Reset categories to default if they seem messed up, or keep existing? 
+          // Better to keep existing categories list, but ensure we categorize imported exercises.
+          // Re-initialize library to catch any new custom exercises (mapped to Uncategorized if unknown)
+
+          // Check for any "Uncategorized" exercises and add that category if needed
+          let hasUncategorized = false;
+          newWeeks.forEach(w => {
+            Object.values(w.sessions).forEach(s => {
+              s.forEach(ex => {
+                if (ex.category === 'Uncategorized') hasUncategorized = true;
+              });
+            });
+          });
+
+          if (hasUncategorized && !workoutData.categories.includes('Uncategorized')) {
+            workoutData.categories.push('Uncategorized');
+          }
+
+          currentWeekIndex = 0;
+          initializeExerciseLibrary(); // Re-scan weeks to populate library
+          saveToLocalStorage();
+          renderWeeksTabs();
+          renderSessions();
+          renderCategories();
+          updateCategoryDropdowns();
+          alert('Import successful!');
         }
       } else {
         alert('Could not parse workout data from file.');
       }
-      
+
     } catch (err) {
       console.error(err);
       alert('Error importing file: ' + err.message);
@@ -860,118 +1194,347 @@ function importFromExcel(input) {
 function parseWeekTable(table) {
   const sessions = {};
   const rows = Array.from(table.querySelectorAll('tr'));
-  
+
   // Row 0: Session Headers (SESSION A, SESSION B...)
   // We need to map column indices to Session Keys
   // The layout is: Session A (4 cols) | Spacer (1 col) | Session B (4 cols) ...
-  
+
   const sessionMap = []; // [{ key: 'A', startCol: 0 }, { key: 'B', startCol: 5 } ...]
-  
+
   const headerRow = rows.find(r => r.textContent.includes('SESSION'));
   if (!headerRow) return { sessions: {} };
-  
+
   const headerCells = Array.from(headerRow.children);
   let colIndex = 0;
-  
+
   headerCells.forEach(cell => {
-     const text = cell.textContent.trim(); // "SESSION A"
-     const colspan = parseInt(cell.getAttribute('colspan') || '1');
-     
-     if (text.startsWith('SESSION')) {
-       const sessionKey = text.replace('SESSION', '').trim();
-       sessionMap.push({ key: sessionKey, col: colIndex });
-       sessions[sessionKey] = [];
-     }
-     colIndex += colspan;
-     // The spacer is usually a separate td or implicit?
-     // In export: <th colspan="4">...</th> <td class="spacer"></td>
-     // The loop above iterates cells. spacer is a cell.
+    const text = cell.textContent.trim(); // "SESSION A"
+    const colspan = parseInt(cell.getAttribute('colspan') || '1');
+
+    if (text.startsWith('SESSION')) {
+      const sessionKey = text.replace('SESSION', '').trim();
+      sessionMap.push({ key: sessionKey, col: colIndex });
+      sessions[sessionKey] = [];
+    }
+    colIndex += colspan;
+    // The spacer is usually a separate td or implicit?
+    // In export: <th colspan="4">...</th> <td class="spacer"></td>
+    // The loop above iterates cells. spacer is a cell.
   });
 
   // Calculate distinct column indices based on the structure we know
   // Actually, simpler: iterate the known sessionMap locations in data rows.
   // Data starts after headers. Headers are usually 2 rows (SESSION X, then Subheaders).
   // Find first row with data: usually row index 2 (0-based) if 0 is Session, 1 is Subheader.
-  
+
   let dataStartIndex = 0;
   rows.forEach((r, i) => {
-     if (r.children[0] && r.children[0].textContent.includes('SESSION')) return;
-     if (r.children[0] && r.children[0].textContent.includes('Exercise')) return; // subheader
-     if (dataStartIndex === 0 && i > 0) dataStartIndex = i;
+    if (r.children[0] && r.children[0].textContent.includes('SESSION')) return;
+    if (r.children[0] && r.children[0].textContent.includes('Exercise')) return; // subheader
+    if (dataStartIndex === 0 && i > 0) dataStartIndex = i;
   });
-  
+
   if (dataStartIndex === 0) dataStartIndex = 2; // fallback
 
   for (let i = dataStartIndex; i < rows.length; i++) {
-     const row = rows[i];
-     // Stop if we hit the "TOTAL SETS" row
-     if (row.textContent.includes('TOTAL SETS')) break;
-     
-     const cells = Array.from(row.children);
-     
-     sessionMap.forEach(sess => {
-        // For each session, we expect 4 columns at sess.col?
-        // Wait, `headerCells` iteration above gave us the index in the *header row*.
-        // In the data row, the colspan=4 is gone, so we have 4 individual cells per session + 1 spacer cell.
-        // So Session A starts at index 0. Session B starts at index 5. Session C at 10.
-        // Formula: index = sessIndex * 5
-        
-        // Let's re-calculate precise start index based on the map order
-     });
+    const row = rows[i];
+    // Stop if we hit the "TOTAL SETS" row
+    if (row.textContent.includes('TOTAL SETS')) break;
+
+    const cells = Array.from(row.children);
+
+    sessionMap.forEach(sess => {
+      // For each session, we expect 4 columns at sess.col?
+      // Wait, `headerCells` iteration above gave us the index in the *header row*.
+      // In the data row, the colspan=4 is gone, so we have 4 individual cells per session + 1 spacer cell.
+      // So Session A starts at index 0. Session B starts at index 5. Session C at 10.
+      // Formula: index = sessIndex * 5
+
+      // Let's re-calculate precise start index based on the map order
+    });
   }
-  
+
   // Re-map column indices for data rows
   // We know export format: 4 data cols + 1 spacer per session.
-  const columnsPerSession = 5; 
-  
-  sessionMap.forEach((sess, sessIdx) => {
-     const startCol = sessIdx * columnsPerSession;
-     
-     for (let i = dataStartIndex; i < rows.length; i++) {
-        const row = rows[i];
-        if (row.textContent.includes('TOTAL SETS')) break;
-        
-        const cells = row.children;
-        if (cells.length <= startCol + 3) continue;
-        
-        const name = cells[startCol].textContent.trim();
-        const sets = parseInt(cells[startCol + 1].textContent);
-        const repsMin = parseInt(cells[startCol + 2].textContent);
-        const repsMax = parseInt(cells[startCol + 3].textContent);
-        
-        if (name && !isNaN(sets)) {
-           // Lookup category
-           let category = 'Uncategorized';
-           
-           // 1. Try existing library
-           Object.keys(workoutData.exerciseLibrary).forEach(cat => {
-              if (workoutData.exerciseLibrary[cat].includes(name)) category = cat;
-           });
-           
-           // 2. Try default data (if library empty/reset)
-           if (category === 'Uncategorized') {
-             // scan defaults
-             defaultWorkoutData.weeks[0].sessions.A.forEach(e => { if(e.name===name) category=e.category; }); // simple check
-             // Actually, construct a flat map from default
-             if(defaultWorkoutData.weeks) {
-                defaultWorkoutData.weeks.forEach(w => Object.values(w.sessions).forEach(s => s.forEach(ex => {
-                    if(ex.name === name) category = ex.category;
-                })));
-             }
-           }
+  const columnsPerSession = 5;
 
-           sessions[sess.key].push({
-              name,
-              sets,
-              repsMin,
-              repsMax,
-              category
-           });
+  sessionMap.forEach((sess, sessIdx) => {
+    const startCol = sessIdx * columnsPerSession;
+
+    for (let i = dataStartIndex; i < rows.length; i++) {
+      const row = rows[i];
+      if (row.textContent.includes('TOTAL SETS')) break;
+
+      const cells = row.children;
+      if (cells.length <= startCol + 3) continue;
+
+      const name = cells[startCol].textContent.trim();
+      const sets = parseInt(cells[startCol + 1].textContent);
+      const repsMin = parseInt(cells[startCol + 2].textContent);
+      const repsMax = parseInt(cells[startCol + 3].textContent);
+
+      if (name && !isNaN(sets)) {
+        // Lookup category
+        let category = 'Uncategorized';
+
+        // 1. Try existing library
+        Object.keys(workoutData.exerciseLibrary).forEach(cat => {
+          if (workoutData.exerciseLibrary[cat].includes(name)) category = cat;
+        });
+
+        // 2. Try default data (if library empty/reset)
+        if (category === 'Uncategorized') {
+          // scan defaults
+          defaultWorkoutData.weeks[0].sessions.A.forEach(e => { if (e.name === name) category = e.category; }); // simple check
+          // Actually, construct a flat map from default
+          if (defaultWorkoutData.weeks) {
+            defaultWorkoutData.weeks.forEach(w => Object.values(w.sessions).forEach(s => s.forEach(ex => {
+              if (ex.name === name) category = ex.category;
+            })));
+          }
         }
-     }
+
+        sessions[sess.key].push({
+          name,
+          sets,
+          repsMin,
+          repsMax,
+          category
+        });
+      }
+    }
   });
 
   return { sessions };
+}
+
+// --- New event listeners for modals ---
+const pickerCancelBtn = document.getElementById('pickerCancel');
+if (pickerCancelBtn) {
+  pickerCancelBtn.addEventListener('click', () => {
+    closeExercisePicker();
+  });
+}
+
+const pickerCategorySelect = document.getElementById('pickerCategory');
+if (pickerCategorySelect) {
+  pickerCategorySelect.addEventListener('change', (e) => {
+    renderExerciseTable(e.target.value);
+  });
+}
+
+const pickerSearchInput = document.getElementById('pickerSearch');
+if (pickerSearchInput) {
+  pickerSearchInput.addEventListener('input', () => {
+    renderExerciseTable(pickerCategorySelect ? pickerCategorySelect.value : '');
+  });
+}
+
+const pickerCreateCustomBtn = document.getElementById('pickerCreateCustomBtn');
+if (pickerCreateCustomBtn) {
+  pickerCreateCustomBtn.addEventListener('click', () => {
+    document.getElementById('exercisePickerModal').style.display = 'none';
+    document.getElementById('modalTitle').textContent = 'Create Custom Exercise';
+    document.getElementById('exerciseName').value = '';
+
+    const catSelect = document.getElementById('exerciseCategory');
+    if (catSelect && pickerCategorySelect) {
+      catSelect.value = pickerCategorySelect.value;
+    }
+
+    document.getElementById('exerciseSets').value = '3';
+    document.getElementById('exerciseRepsMin').value = '8';
+    document.getElementById('exerciseRepsMax').value = '12';
+    document.getElementById('exerciseModal').style.display = 'block';
+  });
+}
+
+const libraryCancelBtn = document.getElementById('libraryCancelBtn');
+if (libraryCancelBtn) {
+  libraryCancelBtn.addEventListener('click', () => {
+    const catInput = document.getElementById('libraryCategorySelect');
+    if (catInput) {
+      catInput.disabled = false;
+      delete catInput.dataset.lockedCategory;
+    }
+    const modal = document.getElementById('addLibraryExerciseModal');
+    const modalHeader = modal ? modal.querySelector('.modal-header') : null;
+    if (modalHeader) modalHeader.textContent = 'Add New Exercise to Library';
+    document.getElementById('addLibraryExerciseModal').style.display = 'none';
+  });
+}
+
+const libraryAddBtn = document.getElementById('libraryAddBtn');
+if (libraryAddBtn) {
+  libraryAddBtn.addEventListener('click', () => {
+    const catInput = document.getElementById('libraryCategorySelect');
+    const nameInput = document.getElementById('libraryExerciseName');
+    if (!catInput || !nameInput) return;
+
+    const cat = catInput.value;
+    const name = nameInput.value.trim();
+    if (!cat) { alert('Please choose a muscle group'); return; }
+    if (!name) { alert('Please enter an exercise name'); return; }
+
+    ensureExerciseInLibrary(cat, name);
+    saveToLocalStorage();
+
+    // Unlock the category dropdown after saving
+    catInput.disabled = false;
+    delete catInput.dataset.lockedCategory;
+
+    // Reset modal header
+    const modal = document.getElementById('addLibraryExerciseModal');
+    const modalHeader = modal ? modal.querySelector('.modal-header') : null;
+    if (modalHeader) modalHeader.textContent = 'Add New Exercise to Library';
+
+    modal.style.display = 'none';
+
+    // Re-render categories to show the new exercise
+    renderCategories();
+
+    if (document.getElementById('exercisePickerModal').style.display === 'block') {
+      renderExerciseTable(pickerCategorySelect ? pickerCategorySelect.value : cat);
+    }
+  });
+}
+
+// Close picker modal when clicking on backdrop
+const pickerModal = document.getElementById('exercisePickerModal');
+if (pickerModal) {
+  pickerModal.addEventListener('click', (e) => {
+    if (e.target === pickerModal) closeExercisePicker();
+  });
+}
+
+const exerciseTableBody = document.getElementById('exerciseTableBody');
+if (exerciseTableBody) {
+  exerciseTableBody.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON' && e.target.classList.contains('btn-small')) {
+      const name = e.target.dataset.name;
+      const category = e.target.dataset.category;
+
+      if (swapMode && swapExerciseIndex !== null) {
+        // --- Swap mode: replace in-place, keep existing sets/reps ---
+        const existing = workoutData.weeks[currentWeekIndex].sessions[currentSession][swapExerciseIndex];
+        workoutData.weeks[currentWeekIndex].sessions[currentSession][swapExerciseIndex] = {
+          name,
+          category,
+          sets: existing.sets,
+          repsMin: existing.repsMin,
+          repsMax: existing.repsMax
+        };
+        ensureExerciseInLibrary(category, name);
+        saveToLocalStorage();
+        renderSessions();
+        renderCategories();
+
+        // Reset picker state
+        const pickerSelect = document.getElementById('pickerCategory');
+        if (pickerSelect) pickerSelect.disabled = false;
+        const pickerHeader = document.querySelector('#exercisePickerModal .modal-header');
+        if (pickerHeader) pickerHeader.textContent = 'Choose Exercise';
+        swapMode = false;
+        swapExerciseIndex = null;
+        document.getElementById('exercisePickerModal').style.display = 'none';
+
+      } else {
+        // --- Normal add mode: open configure modal ---
+        const configName = document.getElementById('configExerciseName');
+        const configCat = document.getElementById('configExerciseCategory');
+        if (configName) configName.value = name;
+        if (configCat) configCat.value = category;
+
+        const stats = getLastUsedExerciseStats(name);
+        const configSets = document.getElementById('configSets');
+        const configRepsMin = document.getElementById('configRepsMin');
+        const configRepsMax = document.getElementById('configRepsMax');
+
+        if (configSets) configSets.value = stats && stats.sets ? stats.sets : 3;
+        if (configRepsMin) configRepsMin.value = stats && stats.repsMin ? stats.repsMin : 8;
+        if (configRepsMax) configRepsMax.value = stats && stats.repsMax ? stats.repsMax : 12;
+
+        document.getElementById('exercisePickerModal').style.display = 'none';
+        document.getElementById('configureExerciseModal').style.display = 'block';
+      }
+    }
+  });
+}
+
+const configCancelBtn = document.getElementById('configCancel');
+if (configCancelBtn) {
+  configCancelBtn.addEventListener('click', () => {
+    document.getElementById('configureExerciseModal').style.display = 'none';
+    document.getElementById('exercisePickerModal').style.display = 'block';
+  });
+}
+
+const configSaveBtn = document.getElementById('configSave');
+if (configSaveBtn) {
+  configSaveBtn.addEventListener('click', () => {
+    const configName = document.getElementById('configExerciseName');
+    const configCat = document.getElementById('configExerciseCategory');
+    const configSets = document.getElementById('configSets');
+    const configRepsMin = document.getElementById('configRepsMin');
+    const configRepsMax = document.getElementById('configRepsMax');
+
+    if (!configName || !configCat) return;
+
+    const name = configName.value;
+    const category = configCat.value;
+    const sets = parseInt(configSets ? configSets.value : 3) || 3;
+    const repsMin = parseInt(configRepsMin ? configRepsMin.value : 8) || 8;
+    const repsMax = parseInt(configRepsMax ? configRepsMax.value : 12) || 12;
+
+    if (!workoutData.weeks[currentWeekIndex].sessions[currentSession]) {
+      workoutData.weeks[currentWeekIndex].sessions[currentSession] = [];
+    }
+
+    workoutData.weeks[currentWeekIndex].sessions[currentSession].push({
+      name, category, sets, repsMin, repsMax
+    });
+
+    saveToLocalStorage();
+    renderSessions();
+    renderCategories();
+
+    document.getElementById('configureExerciseModal').style.display = 'none';
+  });
+}
+
+const addToSessionSaveBtn = document.getElementById('addToSessionSaveBtn');
+if (addToSessionSaveBtn) {
+  addToSessionSaveBtn.addEventListener('click', () => {
+    const sets = parseInt(document.getElementById('addToSessionSets').value) || 3;
+    const repsMin = parseInt(document.getElementById('addToSessionRepsMin').value) || 8;
+    const repsMax = parseInt(document.getElementById('addToSessionRepsMax').value) || 12;
+
+    const checkboxes = document.querySelectorAll('#addToSessionCheckboxes input[type="checkbox"]:not(:disabled):checked');
+    if (checkboxes.length === 0) { alert('Please select at least one session.'); return; }
+
+    checkboxes.forEach(cb => {
+      const sessionKey = cb.value;
+      if (!workoutData.weeks[currentWeekIndex].sessions[sessionKey]) return;
+      workoutData.weeks[currentWeekIndex].sessions[sessionKey].push({
+        name: addToSessionExercise.name,
+        category: addToSessionExercise.category,
+        sets, repsMin, repsMax
+      });
+    });
+
+    ensureExerciseInLibrary(addToSessionExercise.category, addToSessionExercise.name);
+    saveToLocalStorage();
+    renderSessions();
+    renderCategories();
+    document.getElementById('addToSessionModal').style.display = 'none';
+  });
+}
+
+const addToSessionCancelBtn = document.getElementById('addToSessionCancelBtn');
+if (addToSessionCancelBtn) {
+  addToSessionCancelBtn.addEventListener('click', () => {
+    document.getElementById('addToSessionModal').style.display = 'none';
+  });
 }
 
 // Initialize
