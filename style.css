@@ -631,13 +631,33 @@
             .sessions-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .header h1 {
                 font-size: 1.8em;
             }
-            
+
             .categories-grid {
                 grid-template-columns: 1fr;
+            }
+
+            /* Apple HIG: 44x44 minimum tap target on touch devices. */
+            .edit-btn, .delete-btn, .swap-btn,
+            .edit-category-btn, .delete-category-exercise-btn, .add-to-session-btn {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 10px 14px;
+                font-size: 0.95em;
+            }
+
+            .btn-delete-session, .btn-delete-category {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 8px 12px;
+                font-size: 1.1em;
+            }
+
+            .exercise-controls {
+                gap: 10px;
             }
         }
 
