@@ -132,6 +132,44 @@ function validateExercise(input) {
   return null;
 }
 
+// Themed confirm dialog. Replaces native confirm() with a dark-theme modal.
+// onConfirm runs only if the user clicks OK. Cancel/Escape/backdrop dismiss silently.
+function showConfirm(title, message, onConfirm, options) {
+  const opts = options || {};
+  const modal = document.getElementById('confirmModal');
+  const titleEl = document.getElementById('confirmTitle');
+  const msgEl = document.getElementById('confirmMessage');
+  let okBtn = document.getElementById('confirmOk');
+  let cancelBtn = document.getElementById('confirmCancel');
+  if (!modal || !titleEl || !msgEl || !okBtn || !cancelBtn) {
+    if (opts.alertOnly) { window.alert(message); if (onConfirm) onConfirm(); return; }
+    if (window.confirm(message)) { if (onConfirm) onConfirm(); }
+    return;
+  }
+  titleEl.textContent = title;
+  msgEl.textContent = message;
+  okBtn.textContent = opts.okText || 'OK';
+  cancelBtn.style.display = opts.alertOnly ? 'none' : '';
+  modal.style.display = 'block';
+
+  // Clone buttons to drop any stale listeners from earlier invocations.
+  const freshOk = okBtn.cloneNode(true);
+  const freshCancel = cancelBtn.cloneNode(true);
+  okBtn.parentNode.replaceChild(freshOk, okBtn);
+  cancelBtn.parentNode.replaceChild(freshCancel, cancelBtn);
+  okBtn = freshOk;
+  cancelBtn = freshCancel;
+
+  const close = () => { modal.style.display = 'none'; };
+  okBtn.addEventListener('click', () => { close(); if (onConfirm) onConfirm(); });
+  cancelBtn.addEventListener('click', close);
+}
+
+// Themed alert dialog. Single OK button, no callback.
+function showAlert(title, message) {
+  showConfirm(title, message, null, { alertOnly: true });
+}
+
 // Save to localStorage helper
 function saveToLocalStorage() {
   try {
@@ -139,9 +177,9 @@ function saveToLocalStorage() {
     localStorage.setItem('currentWeekIndex', String(currentWeekIndex));
   } catch (err) {
     if (err && (err.name === 'QuotaExceededError' || err.code === 22 || err.code === 1014)) {
-      alert('Browser storage is full. Export your workout to CSV and use "Reset Default" to free up space, then try again.');
+      showAlert('Browser storage is full', 'Export your workout to CSV and use "Reset Default" to free up space, then try again.');
     } else {
-      alert('Could not save changes: ' + (err && err.message ? err.message : err));
+      showAlert('Could not save changes', (err && err.message ? err.message : String(err)));
     }
   }
 }
@@ -169,16 +207,20 @@ function initializeExerciseLibrary() {
 
 // Reset to default
 function resetToDefault() {
-  if (confirm('This will erase all your custom changes and restore the default template. Are you sure?')) {
-    workoutData = JSON.parse(JSON.stringify(defaultWorkoutData));
-    initializeExerciseLibrary();
-    currentWeekIndex = 0;
-    saveToLocalStorage();
-    renderWeeksTabs();
-    renderSessions();
-    renderCategories();
-    updateCategoryDropdowns();
-  }
+  showConfirm(
+    'Reset to default',
+    'This will erase all your custom changes and restore the default template. Are you sure?',
+    () => {
+      workoutData = JSON.parse(JSON.stringify(defaultWorkoutData));
+      initializeExerciseLibrary();
+      currentWeekIndex = 0;
+      saveToLocalStorage();
+      renderWeeksTabs();
+      renderSessions();
+      renderCategories();
+      updateCategoryDropdowns();
+    }
+  );
 }
 
 // Render sessions of current week
@@ -294,23 +336,27 @@ function openAddExerciseToCategory(category) {
 
 // Delete an exercise from the library and all sessions across all weeks
 function deleteCategoryExercise(name, category) {
-  if (!confirm(`Delete "${name}" from the ${category} category? This will also remove it from all sessions.`)) return;
+  showConfirm(
+    'Delete exercise',
+    `Delete "${name}" from the ${category} category? This will also remove it from all sessions.`,
+    () => {
+      // Remove from exercise library
+      if (workoutData.exerciseLibrary && workoutData.exerciseLibrary[category]) {
+        workoutData.exerciseLibrary[category] = workoutData.exerciseLibrary[category].filter(n => n !== name);
+      }
 
-  // Remove from exercise library
-  if (workoutData.exerciseLibrary && workoutData.exerciseLibrary[category]) {
-    workoutData.exerciseLibrary[category] = workoutData.exerciseLibrary[category].filter(n => n !== name);
-  }
+      // Remove from all sessions across all weeks
+      workoutData.weeks.forEach(week => {
+        Object.keys(week.sessions || {}).forEach(sessionKey => {
+          week.sessions[sessionKey] = week.sessions[sessionKey].filter(ex => ex.name !== name);
+        });
+      });
 
-  // Remove from all sessions across all weeks
-  workoutData.weeks.forEach(week => {
-    Object.keys(week.sessions || {}).forEach(sessionKey => {
-      week.sessions[sessionKey] = week.sessions[sessionKey].filter(ex => ex.name !== name);
-    });
-  });
-
-  saveToLocalStorage();
-  renderSessions();
-  renderCategories();
+      saveToLocalStorage();
+      renderSessions();
+      renderCategories();
+    }
+  );
 }
 
 // ---- Add to Session modal ----
@@ -640,11 +686,16 @@ function editExercise(session, index) {
 }
 
 function deleteExercise(session, index) {
-  if (!confirm('Are you sure you want to delete this exercise?')) return;
-  workoutData.weeks[currentWeekIndex].sessions[session].splice(index, 1);
-  saveToLocalStorage();
-  renderSessions();
-  renderCategories();
+  showConfirm(
+    'Delete exercise',
+    'Are you sure you want to delete this exercise?',
+    () => {
+      workoutData.weeks[currentWeekIndex].sessions[session].splice(index, 1);
+      saveToLocalStorage();
+      renderSessions();
+      renderCategories();
+    }
+  );
 }
 
 function openCategoryModal(exerciseName, currentCategory) {
@@ -731,11 +782,16 @@ function addSession() {
 }
 
 function deleteSession(session) {
-  if (!confirm(`Are you sure you want to delete Session ${session}?`)) return;
-  delete workoutData.weeks[currentWeekIndex].sessions[session];
-  saveToLocalStorage();
-  renderSessions();
-  renderCategories();
+  showConfirm(
+    'Delete session',
+    `Are you sure you want to delete Session ${session}?`,
+    () => {
+      delete workoutData.weeks[currentWeekIndex].sessions[session];
+      saveToLocalStorage();
+      renderSessions();
+      renderCategories();
+    }
+  );
 }
 
 // Categories
@@ -745,12 +801,17 @@ function openAddCategoryModal() {
 }
 
 function deleteCategory(category) {
-  if (!confirm(`Are you sure you want to delete category \"${category}\"?`)) return;
-  workoutData.categories = workoutData.categories.filter(c => c !== category);
-  delete workoutData.exerciseLibrary[category];
-  saveToLocalStorage();
-  updateCategoryDropdowns();
-  renderCategories();
+  showConfirm(
+    'Delete category',
+    `Are you sure you want to delete category "${category}"?`,
+    () => {
+      workoutData.categories = workoutData.categories.filter(c => c !== category);
+      delete workoutData.exerciseLibrary[category];
+      saveToLocalStorage();
+      updateCategoryDropdowns();
+      renderCategories();
+    }
+  );
 }
 
 function updateCategoryDropdowns() {
@@ -840,18 +901,24 @@ function duplicateLastWeek() {
 
 function deleteCurrentWeek() {
   if (workoutData.weeks.length <= 1) {
-    alert('At least one week must remain.');
+    showAlert('Cannot delete', 'At least one week must remain.');
     return;
   }
-  if (!confirm(`Delete Week ${currentWeekIndex + 1}? This cannot be undone.`)) return;
-  workoutData.weeks.splice(currentWeekIndex, 1);
-  if (currentWeekIndex >= workoutData.weeks.length) {
-    currentWeekIndex = workoutData.weeks.length - 1;
-  }
-  saveToLocalStorage();
-  renderWeeksTabs();
-  renderSessions();
-  renderCategories();
+  const weekNum = currentWeekIndex + 1;
+  showConfirm(
+    'Delete week',
+    `Delete Week ${weekNum}? This cannot be undone.`,
+    () => {
+      workoutData.weeks.splice(currentWeekIndex, 1);
+      if (currentWeekIndex >= workoutData.weeks.length) {
+        currentWeekIndex = workoutData.weeks.length - 1;
+      }
+      saveToLocalStorage();
+      renderWeeksTabs();
+      renderSessions();
+      renderCategories();
+    }
+  );
 }
 
 // Export/Import CSV
@@ -960,31 +1027,35 @@ function importFromCSV(input) {
 
       if (newWeeks.length > 0) {
         const suffix = skippedRows > 0 ? ` (${skippedRows} row${skippedRows === 1 ? '' : 's'} skipped due to invalid data)` : '';
-        if (confirm('Import successful' + suffix + '. Override current split?')) {
-          workoutData.weeks = newWeeks;
+        showConfirm(
+          'Import CSV',
+          'Import successful' + suffix + '. Override current split?',
+          () => {
+            workoutData.weeks = newWeeks;
 
-          let hasCategories = new Set(workoutData.categories);
-          newWeeks.forEach(w => {
-            Object.values(w.sessions).forEach(s => {
-              s.forEach(ex => {
-                if (!hasCategories.has(ex.category)) {
-                  workoutData.categories.push(ex.category);
-                  hasCategories.add(ex.category);
-                }
+            let hasCategories = new Set(workoutData.categories);
+            newWeeks.forEach(w => {
+              Object.values(w.sessions).forEach(s => {
+                s.forEach(ex => {
+                  if (!hasCategories.has(ex.category)) {
+                    workoutData.categories.push(ex.category);
+                    hasCategories.add(ex.category);
+                  }
+                });
               });
             });
-          });
 
-          currentWeekIndex = 0;
-          initializeExerciseLibrary();
-          saveToLocalStorage();
-          renderWeeksTabs();
-          renderSessions();
-          renderCategories();
-          updateCategoryDropdowns();
-        }
+            currentWeekIndex = 0;
+            initializeExerciseLibrary();
+            saveToLocalStorage();
+            renderWeeksTabs();
+            renderSessions();
+            renderCategories();
+            updateCategoryDropdowns();
+          }
+        );
       } else {
-        alert('Could not parse workout data from CSV file.');
+        showAlert('Import failed', 'Could not parse workout data from CSV file.');
       }
 
     } catch (err) {
@@ -1177,37 +1248,40 @@ function importFromExcel(input) {
 
       if (newWeeks.length > 0) {
         const suffix = skippedRows > 0 ? ` (${skippedRows} row${skippedRows === 1 ? '' : 's'} skipped due to invalid data)` : '';
-        if (confirm(`Found ${newWeeks.length} weeks${suffix}. Import and overwrite current split?`)) {
-          workoutData.weeks = newWeeks;
-          // Reset categories to default if they seem messed up, or keep existing? 
-          // Better to keep existing categories list, but ensure we categorize imported exercises.
-          // Re-initialize library to catch any new custom exercises (mapped to Uncategorized if unknown)
+        showConfirm(
+          'Import Excel',
+          `Found ${newWeeks.length} weeks${suffix}. Import and overwrite current split?`,
+          () => {
+            workoutData.weeks = newWeeks;
+            // Better to keep existing categories list, but ensure we categorize imported exercises.
+            // Re-initialize library to catch any new custom exercises (mapped to Uncategorized if unknown)
 
-          // Check for any "Uncategorized" exercises and add that category if needed
-          let hasUncategorized = false;
-          newWeeks.forEach(w => {
-            Object.values(w.sessions).forEach(s => {
-              s.forEach(ex => {
-                if (ex.category === 'Uncategorized') hasUncategorized = true;
+            // Check for any "Uncategorized" exercises and add that category if needed
+            let hasUncategorized = false;
+            newWeeks.forEach(w => {
+              Object.values(w.sessions).forEach(s => {
+                s.forEach(ex => {
+                  if (ex.category === 'Uncategorized') hasUncategorized = true;
+                });
               });
             });
-          });
 
-          if (hasUncategorized && !workoutData.categories.includes('Uncategorized')) {
-            workoutData.categories.push('Uncategorized');
+            if (hasUncategorized && !workoutData.categories.includes('Uncategorized')) {
+              workoutData.categories.push('Uncategorized');
+            }
+
+            currentWeekIndex = 0;
+            initializeExerciseLibrary(); // Re-scan weeks to populate library
+            saveToLocalStorage();
+            renderWeeksTabs();
+            renderSessions();
+            renderCategories();
+            updateCategoryDropdowns();
+            showAlert('Import successful', `Imported ${newWeeks.length} week${newWeeks.length === 1 ? '' : 's'}.`);
           }
-
-          currentWeekIndex = 0;
-          initializeExerciseLibrary(); // Re-scan weeks to populate library
-          saveToLocalStorage();
-          renderWeeksTabs();
-          renderSessions();
-          renderCategories();
-          updateCategoryDropdowns();
-          alert('Import successful!');
-        }
+        );
       } else {
-        alert('Could not parse workout data from file.');
+        showAlert('Import failed', 'Could not parse workout data from file.');
       }
 
     } catch (err) {
