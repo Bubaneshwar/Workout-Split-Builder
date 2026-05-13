@@ -1640,6 +1640,35 @@ if (addToSessionCancelBtn) {
   });
 }
 
+// Close any visible modal. Picker modal goes through its own cleanup so
+// swap-mode flags + locked-category state get reset; others just hide.
+function closeAllModals() {
+  let pickerWasOpen = false;
+  document.querySelectorAll('.modal').forEach(m => {
+    if (m.style.display !== 'block') return;
+    if (m.id === 'exercisePickerModal') {
+      pickerWasOpen = true;
+    } else {
+      m.style.display = 'none';
+    }
+  });
+  if (pickerWasOpen) closeExercisePicker();
+}
+
+// Escape key closes any open modal.
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeAllModals();
+});
+
+// Clicking the backdrop (outside .modal-content) closes the modal.
+// exercisePickerModal already has its own backdrop handler; skip it here.
+document.querySelectorAll('.modal').forEach(m => {
+  if (m.id === 'exercisePickerModal') return;
+  m.addEventListener('click', (e) => {
+    if (e.target === m) m.style.display = 'none';
+  });
+});
+
 // Initialize
 initializeExerciseLibrary();
 updateCategoryDropdowns();
