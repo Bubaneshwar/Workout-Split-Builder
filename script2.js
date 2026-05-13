@@ -228,7 +228,18 @@ function renderSessions() {
   const grid = document.getElementById('sessionsGrid');
   grid.innerHTML = '';
   const sessionsObj = workoutData.weeks[currentWeekIndex].sessions || {};
-  Object.keys(sessionsObj).forEach(session => {
+  const sessionKeys = Object.keys(sessionsObj);
+  if (sessionKeys.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.innerHTML = `
+      <h3>No sessions yet</h3>
+      <p>Tap <strong>+ Add Session</strong> above to start building your split.</p>
+    `;
+    grid.appendChild(empty);
+    return;
+  }
+  sessionKeys.forEach(session => {
     const sessionExercises = sessionsObj[session];
     const sessionVolume = sessionExercises.reduce((total, ex) => total + (parseInt(ex.sets) || 0), 0);
 

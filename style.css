@@ -68,6 +68,29 @@
             border-color: #D95D2E;
             background: #353535;
         }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 40px 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 2px dashed #3a3a3a;
+            text-align: center;
+            color: #ccc;
+        }
+        .empty-state h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.4em;
+            color: #fff;
+        }
+        .empty-state p {
+            margin: 0;
+            font-size: 1em;
+        }
+        .empty-state strong {
+            color: #D95D2E;
+        }
         
         .session-header {
             display: flex;
