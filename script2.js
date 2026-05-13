@@ -100,10 +100,50 @@ let pickerSelected = { name: null, category: null };
 let swapMode = false;       // true when picker is opened for swapping
 let swapExerciseIndex = null; // index of the exercise being swapped
 
+// Escape user-controlled strings before inserting them into HTML via innerHTML.
+// Use for visible text (inside spans, divs, etc.).
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Encode user-controlled strings as a safe JS string literal for use inside
+// inline event handler attributes, e.g. onclick="foo(${jsAttr(name)}, 1)".
+// JSON.stringify quotes + escapes JS metachars; escapeHtml then makes the result
+// safe as an HTML attribute value. The HTML parser decodes &quot; back to ", so
+// the JS sees a valid double-quoted string regardless of what's inside `s`.
+function jsAttr(s) {
+  return escapeHtml(JSON.stringify(String(s == null ? '' : s)));
+}
+
+// Validate sets/reps fields. Returns null if OK, or an error message string.
+function validateExercise(input) {
+  const s = Number(input.sets);
+  const rmin = Number(input.repsMin);
+  const rmax = Number(input.repsMax);
+  if (!Number.isInteger(s) || s < 1) return 'Sets must be a whole number of 1 or more.';
+  if (!Number.isInteger(rmin) || rmin < 1) return 'Reps Min must be a whole number of 1 or more.';
+  if (!Number.isInteger(rmax) || rmax < 1) return 'Reps Max must be a whole number of 1 or more.';
+  if (rmin > rmax) return 'Reps Min cannot be greater than Reps Max.';
+  return null;
+}
+
 // Save to localStorage helper
 function saveToLocalStorage() {
-  localStorage.setItem('workoutSplitData', JSON.stringify(workoutData));
-  localStorage.setItem('currentWeekIndex', String(currentWeekIndex));
+  try {
+    localStorage.setItem('workoutSplitData', JSON.stringify(workoutData));
+    localStorage.setItem('currentWeekIndex', String(currentWeekIndex));
+  } catch (err) {
+    if (err && (err.name === 'QuotaExceededError' || err.code === 22 || err.code === 1014)) {
+      alert('Browser storage is full. Export your workout to CSV and use "Reset Default" to free up space, then try again.');
+    } else {
+      alert('Could not save changes: ' + (err && err.message ? err.message : err));
+    }
+  }
 }
 
 // Initialize exercise library from weeks' sessions and existing library
@@ -156,24 +196,24 @@ function renderSessions() {
 
     card.innerHTML = `
       <div class="session-header">
-        <div class="session-label">SESSION ${session} <span class="session-volume">${sessionVolume}</span></div>
+        <div class="session-label">SESSION ${escapeHtml(session)} <span class="session-volume">${sessionVolume}</span></div>
         <div style="display: flex; align-items: center;">
-          <button class="add-exercise-btn" onclick="openAddExerciseModal('${session}')">+ Add Exercise</button>
-          <button class="btn-delete-session" onclick="deleteSession('${session}')" title="Delete Session">×</button>
+          <button class="add-exercise-btn" onclick="openAddExerciseModal(${jsAttr(session)})">+ Add Exercise</button>
+          <button class="btn-delete-session" onclick="deleteSession(${jsAttr(session)})" title="Delete Session">×</button>
         </div>
       </div>
-      <ul class="exercise-list" data-session="${session}">
+      <ul class="exercise-list" data-session="${escapeHtml(session)}">
         ${sessionExercises.map((ex, idx) => `
-          <li class="exercise-item" draggable="true" data-session="${session}" data-index="${idx}">
+          <li class="exercise-item" draggable="true" data-session="${escapeHtml(session)}" data-index="${idx}">
             <div class="exercise-content">
-              <div class="exercise-name">${ex.name}</div>
-              <div class="exercise-details"><span class="sets">${ex.sets} sets</span> × ${ex.repsMin}-${ex.repsMax} reps</div>
-              <div class="exercise-category">${ex.category}</div>
+              <div class="exercise-name">${escapeHtml(ex.name)}</div>
+              <div class="exercise-details"><span class="sets">${escapeHtml(ex.sets)} sets</span> × ${escapeHtml(ex.repsMin)}-${escapeHtml(ex.repsMax)} reps</div>
+              <div class="exercise-category">${escapeHtml(ex.category)}</div>
             </div>
             <div class="exercise-controls">
-              <button class="swap-btn" onclick="openSwapExercise('${session}', ${idx})" title="Swap exercise">Swap</button>
-              <button class="edit-btn" onclick="editExercise('${session}', ${idx})">Edit</button>
-              <button class="delete-btn" onclick="deleteExercise('${session}', ${idx})">Delete</button>
+              <button class="swap-btn" onclick="openSwapExercise(${jsAttr(session)}, ${idx})" title="Swap exercise">Swap</button>
+              <button class="edit-btn" onclick="editExercise(${jsAttr(session)}, ${idx})">Edit</button>
+              <button class="delete-btn" onclick="deleteExercise(${jsAttr(session)}, ${idx})">Delete</button>
             </div>
           </li>
         `).join('')}
@@ -201,30 +241,29 @@ function renderCategories() {
       <div class="category-header">
         <div class="category-header-content">
           <span class="category-volume">(${categoryVolume} SETS)</span>
-          ${category}
-          <button class="btn-delete-category" onclick="deleteCategory('${category}')" title="Delete Category">×</button>
+          ${escapeHtml(category)}
+          <button class="btn-delete-category" onclick="deleteCategory(${jsAttr(category)})" title="Delete Category">×</button>
         </div>
       </div>
       <ul class="category-exercises">
         ${exercises.map(ex => {
       const exerciseVolume = getExerciseVolume(ex.name);
-      const safeName = ex.name.replace(/'/g, "\\'");
       return `
             <li class="category-exercise-item">
               <div class="category-exercise-info">
                 <span class="exercise-volume">${exerciseVolume}</span>
-                <span>${ex.name}</span>
+                <span>${escapeHtml(ex.name)}</span>
               </div>
               <div class="category-exercise-actions">
-                <button class="add-to-session-btn" onclick="openAddToSessionModal('${safeName}', '${ex.category}')">Add to</button>
-                <button class="edit-category-btn" onclick="openCategoryModal('${safeName}', '${category}')">Change</button>
-                <button class="delete-category-exercise-btn" onclick="deleteCategoryExercise('${safeName}', '${category}')" title="Delete exercise">×</button>
+                <button class="add-to-session-btn" onclick="openAddToSessionModal(${jsAttr(ex.name)}, ${jsAttr(ex.category)})">Add to</button>
+                <button class="edit-category-btn" onclick="openCategoryModal(${jsAttr(ex.name)}, ${jsAttr(category)})">Change</button>
+                <button class="delete-category-exercise-btn" onclick="deleteCategoryExercise(${jsAttr(ex.name)}, ${jsAttr(category)})" title="Delete exercise">×</button>
               </div>
             </li>
           `;
     }).join('')}
       </ul>
-      <button class="btn-add-category-exercise" onclick="openAddExerciseToCategory('${category}')">+ Add Exercise</button>
+      <button class="btn-add-category-exercise" onclick="openAddExerciseToCategory(${jsAttr(category)})">+ Add Exercise</button>
     `;
 
     grid.appendChild(card);
@@ -299,9 +338,9 @@ function openAddToSessionModal(name, category) {
     const label = document.createElement('label');
     label.style.cssText = 'display:flex; align-items:center; gap:8px; cursor:pointer; color:#ccc; font-size:0.95em;';
     label.innerHTML = `
-      <input type="checkbox" value="${sessionKey}" ${alreadyIn ? 'checked disabled' : ''}
+      <input type="checkbox" value="${escapeHtml(sessionKey)}" ${alreadyIn ? 'checked disabled' : ''}
         style="width:16px; height:16px; accent-color:#D95D2E; cursor:pointer;">
-      <span>Session ${sessionKey}${alreadyIn ? ' <em style="color:#888;font-size:0.85em;">(already added)</em>' : ''}</span>
+      <span>Session ${escapeHtml(sessionKey)}${alreadyIn ? ' <em style="color:#888;font-size:0.85em;">(already added)</em>' : ''}</span>
     `;
     container.appendChild(label);
   });
@@ -368,28 +407,6 @@ function ensureExerciseInLibrary(category, name) {
     workoutData.exerciseLibrary[category].push(name);
     workoutData.exerciseLibrary[category].sort((a, b) => a.localeCompare(b));
   }
-}
-
-function getCategoryVolume(category) {
-  let volume = 0;
-  const sessionsObj = workoutData.weeks[currentWeekIndex].sessions || {};
-  Object.values(sessionsObj).forEach(session => {
-    session.forEach(ex => {
-      if (ex.category === category) volume += parseInt(ex.sets) || 0;
-    });
-  });
-  return volume;
-}
-
-function getExerciseVolume(exerciseName) {
-  let volume = 0;
-  const sessionsObj = workoutData.weeks[currentWeekIndex].sessions || {};
-  Object.values(sessionsObj).forEach(session => {
-    session.forEach(ex => {
-      if (ex.name === exerciseName) volume += parseInt(ex.sets) || 0;
-    });
-  });
-  return volume;
 }
 
 // Drag and drop
@@ -579,12 +596,12 @@ function renderExerciseTable(category) {
     tr.innerHTML = `
       <td class="ex-name" style="padding:8px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="text-transform: capitalize;">${item.name}</span>
-            <span style="color:#888; font-size:0.85em; font-style:italic; margin-left:10px;">${item.category}</span>
+            <span style="text-transform: capitalize;">${escapeHtml(item.name)}</span>
+            <span style="color:#888; font-size:0.85em; font-style:italic; margin-left:10px;">${escapeHtml(item.category)}</span>
         </div>
       </td>
       <td style="padding:8px; text-align:center;">
-        <button class="btn btn-primary btn-small" data-name="${item.name}" data-category="${item.category}">Select</button>
+        <button class="btn btn-primary btn-small" data-name="${escapeHtml(item.name)}" data-category="${escapeHtml(item.category)}">Select</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -645,7 +662,9 @@ if (saveExerciseBtn) saveExerciseBtn.addEventListener('click', () => {
   const sets = parseInt(document.getElementById('exerciseSets').value);
   const repsMin = parseInt(document.getElementById('exerciseRepsMin').value);
   const repsMax = parseInt(document.getElementById('exerciseRepsMax').value);
-  if (!name || !sets || !repsMin || !repsMax) { alert('Please fill in all fields'); return; }
+  if (!name) { alert('Please fill in all fields'); return; }
+  const validationError = validateExercise({ sets, repsMin, repsMax });
+  if (validationError) { alert(validationError); return; }
   const exercise = { name, sets, repsMin, repsMax, category };
   if (currentExerciseIndex !== null) {
     workoutData.weeks[currentWeekIndex].sessions[currentSession][currentExerciseIndex] = exercise;
@@ -883,6 +902,7 @@ function importFromCSV(input) {
       }
 
       const newWeeks = [];
+      let skippedRows = 0;
 
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i];
@@ -929,15 +949,18 @@ function importFromCSV(input) {
           newWeeks[weekIdx].sessions[session] = [];
         }
 
-        if (name && !isNaN(sets)) {
-          newWeeks[weekIdx].sessions[session].push({
-            name, sets, repsMin: isNaN(repsMin) ? 0 : repsMin, repsMax: isNaN(repsMax) ? 0 : repsMax, category: category || 'Uncategorized'
-          });
-        }
+        if (!name) { skippedRows++; continue; }
+        const rowError = validateExercise({ sets, repsMin, repsMax });
+        if (rowError) { skippedRows++; continue; }
+
+        newWeeks[weekIdx].sessions[session].push({
+          name, sets, repsMin, repsMax, category: category || 'Uncategorized'
+        });
       }
 
       if (newWeeks.length > 0) {
-        if (confirm('Import successful! Override current split?')) {
+        const suffix = skippedRows > 0 ? ` (${skippedRows} row${skippedRows === 1 ? '' : 's'} skipped due to invalid data)` : '';
+        if (confirm('Import successful' + suffix + '. Override current split?')) {
           workoutData.weeks = newWeeks;
 
           let hasCategories = new Set(workoutData.categories);
@@ -1059,10 +1082,10 @@ function exportToExcel() {
         const ex = (week.sessions[session] || [])[i];
         if (ex) {
           html += `
-            <td class="ex-name">${ex.name}</td>
-            <td>${ex.sets}</td>
-            <td>${ex.repsMin}</td>
-            <td>${ex.repsMax}</td>
+            <td class="ex-name">${escapeHtml(ex.name)}</td>
+            <td>${escapeHtml(ex.sets)}</td>
+            <td>${escapeHtml(ex.repsMin)}</td>
+            <td>${escapeHtml(ex.repsMax)}</td>
           `;
         } else {
           html += `<td></td><td></td><td></td><td></td>`;
@@ -1092,7 +1115,7 @@ function exportToExcel() {
     html += `<thead><tr><th>Muscle Group</th><th>Total Sets</th></tr></thead><tbody>`;
     const sortedCategories = Object.keys(categoryVolumes).sort((a, b) => categoryVolumes[b] - categoryVolumes[a]);
     sortedCategories.forEach(cat => {
-      if (categoryVolumes[cat] > 0) html += `<tr><td class="ex-name" style="text-transform: capitalize;">${cat}</td><td>${categoryVolumes[cat]}</td></tr>`;
+      if (categoryVolumes[cat] > 0) html += `<tr><td class="ex-name" style="text-transform: capitalize;">${escapeHtml(cat)}</td><td>${categoryVolumes[cat]}</td></tr>`;
     });
     html += `</tbody></table>`;
 
@@ -1123,6 +1146,7 @@ function importFromExcel(input) {
       const doc = parser.parseFromString(content, 'text/html');
 
       const newWeeks = [];
+      let skippedRows = 0;
       const titles = doc.querySelectorAll('.section-title');
 
       // If no titles found, maybe it's a single week or old format
@@ -1130,7 +1154,9 @@ function importFromExcel(input) {
         // Try parsing as single week
         const sessionTable = doc.querySelector('table');
         if (sessionTable) {
-          newWeeks.push(parseWeekTable(sessionTable));
+          const parsed = parseWeekTable(sessionTable);
+          newWeeks.push({ sessions: parsed.sessions });
+          skippedRows += parsed.skipped || 0;
         } else {
           throw new Error("No session table found");
         }
@@ -1142,13 +1168,16 @@ function importFromExcel(input) {
             sibling = sibling.nextElementSibling;
           }
           if (sibling) {
-            newWeeks.push(parseWeekTable(sibling));
+            const parsed = parseWeekTable(sibling);
+            newWeeks.push({ sessions: parsed.sessions });
+            skippedRows += parsed.skipped || 0;
           }
         });
       }
 
       if (newWeeks.length > 0) {
-        if (confirm(`Found ${newWeeks.length} weeks. Import and overwrite current split?`)) {
+        const suffix = skippedRows > 0 ? ` (${skippedRows} row${skippedRows === 1 ? '' : 's'} skipped due to invalid data)` : '';
+        if (confirm(`Found ${newWeeks.length} weeks${suffix}. Import and overwrite current split?`)) {
           workoutData.weeks = newWeeks;
           // Reset categories to default if they seem messed up, or keep existing? 
           // Better to keep existing categories list, but ensure we categorize imported exercises.
@@ -1193,6 +1222,7 @@ function importFromExcel(input) {
 
 function parseWeekTable(table) {
   const sessions = {};
+  let skipped = 0;
   const rows = Array.from(table.querySelectorAll('tr'));
 
   // Row 0: Session Headers (SESSION A, SESSION B...)
@@ -1202,7 +1232,7 @@ function parseWeekTable(table) {
   const sessionMap = []; // [{ key: 'A', startCol: 0 }, { key: 'B', startCol: 5 } ...]
 
   const headerRow = rows.find(r => r.textContent.includes('SESSION'));
-  if (!headerRow) return { sessions: {} };
+  if (!headerRow) return { sessions: {}, skipped: 0 };
 
   const headerCells = Array.from(headerRow.children);
   let colIndex = 0;
@@ -1273,39 +1303,32 @@ function parseWeekTable(table) {
       const repsMin = parseInt(cells[startCol + 2].textContent);
       const repsMax = parseInt(cells[startCol + 3].textContent);
 
-      if (name && !isNaN(sets)) {
-        // Lookup category
-        let category = 'Uncategorized';
+      if (!name) continue;
+      const cellError = validateExercise({ sets, repsMin, repsMax });
+      if (cellError) { skipped++; continue; }
 
-        // 1. Try existing library
-        Object.keys(workoutData.exerciseLibrary).forEach(cat => {
-          if (workoutData.exerciseLibrary[cat].includes(name)) category = cat;
-        });
+      // Lookup category
+      let category = 'Uncategorized';
 
-        // 2. Try default data (if library empty/reset)
-        if (category === 'Uncategorized') {
-          // scan defaults
-          defaultWorkoutData.weeks[0].sessions.A.forEach(e => { if (e.name === name) category = e.category; }); // simple check
-          // Actually, construct a flat map from default
-          if (defaultWorkoutData.weeks) {
-            defaultWorkoutData.weeks.forEach(w => Object.values(w.sessions).forEach(s => s.forEach(ex => {
-              if (ex.name === name) category = ex.category;
-            })));
-          }
+      // 1. Try existing library
+      Object.keys(workoutData.exerciseLibrary).forEach(cat => {
+        if (workoutData.exerciseLibrary[cat].includes(name)) category = cat;
+      });
+
+      // 2. Try default data (if library empty/reset)
+      if (category === 'Uncategorized') {
+        if (defaultWorkoutData.weeks) {
+          defaultWorkoutData.weeks.forEach(w => Object.values(w.sessions).forEach(s => s.forEach(ex => {
+            if (ex.name === name) category = ex.category;
+          })));
         }
-
-        sessions[sess.key].push({
-          name,
-          sets,
-          repsMin,
-          repsMax,
-          category
-        });
       }
+
+      sessions[sess.key].push({ name, sets, repsMin, repsMax, category });
     }
   });
 
-  return { sessions };
+  return { sessions, skipped };
 }
 
 // --- New event listeners for modals ---
@@ -1486,6 +1509,9 @@ if (configSaveBtn) {
     const repsMin = parseInt(configRepsMin ? configRepsMin.value : 8) || 8;
     const repsMax = parseInt(configRepsMax ? configRepsMax.value : 12) || 12;
 
+    const configError = validateExercise({ sets, repsMin, repsMax });
+    if (configError) { alert(configError); return; }
+
     if (!workoutData.weeks[currentWeekIndex].sessions[currentSession]) {
       workoutData.weeks[currentWeekIndex].sessions[currentSession] = [];
     }
@@ -1508,6 +1534,9 @@ if (addToSessionSaveBtn) {
     const sets = parseInt(document.getElementById('addToSessionSets').value) || 3;
     const repsMin = parseInt(document.getElementById('addToSessionRepsMin').value) || 8;
     const repsMax = parseInt(document.getElementById('addToSessionRepsMax').value) || 12;
+
+    const addError = validateExercise({ sets, repsMin, repsMax });
+    if (addError) { alert(addError); return; }
 
     const checkboxes = document.querySelectorAll('#addToSessionCheckboxes input[type="checkbox"]:not(:disabled):checked');
     if (checkboxes.length === 0) { alert('Please select at least one session.'); return; }
