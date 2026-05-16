@@ -170,6 +170,25 @@ function showAlert(title, message) {
   showConfirm(title, message, null, { alertOnly: true });
 }
 
+// Sessions layout preference. 'edit' = full cards with swap/edit/delete + drag.
+// 'view' = compact read-only overview, all action buttons hidden, fits more on screen.
+function setLayout(mode) {
+  const valid = (mode === 'view') ? 'view' : 'edit';
+  try { localStorage.setItem('sessionsLayout', valid); } catch (e) { /* quota — prefs are non-critical */ }
+  applyLayoutPreference();
+}
+
+function applyLayoutPreference() {
+  const raw = localStorage.getItem('sessionsLayout');
+  const mode = (raw === 'view') ? 'view' : 'edit';
+  const grid = document.getElementById('sessionsGrid');
+  if (grid) grid.classList.toggle('layout-view', mode === 'view');
+  const editBtn = document.getElementById('layoutEditBtn');
+  const viewBtn = document.getElementById('layoutViewBtn');
+  if (editBtn) editBtn.classList.toggle('active', mode === 'edit');
+  if (viewBtn) viewBtn.classList.toggle('active', mode === 'view');
+}
+
 // Save to localStorage helper
 function saveToLocalStorage() {
   try {
@@ -223,6 +242,209 @@ function resetToDefault() {
   );
 }
 
+// Tracks which session is currently open in the per-session edit modal so
+// that any save/re-render path can refresh its contents.
+let currentEditModalSession = null;
+
+function openSessionEditModal(session) {
+  currentEditModalSession = session;
+  const modal = document.getElementById('sessionEditModal');
+  if (!modal) return;
+  renderSessionEditModalContent(session);
+  modal.style.display = 'block';
+}
+
+function closeSessionEditModal() {
+  currentEditModalSession = null;
+  const modal = document.getElementById('sessionEditModal');
+  if (modal) modal.style.display = 'none';
+}
+
+// Re-render the modal body for the currently-open session. Called after any
+// renderSessions() so an exercise added/edited via the modal flow reflects
+// immediately without closing the modal.
+function refreshSessionEditModal() {
+  if (currentEditModalSession === null) return;
+  const modal = document.getElementById('sessionEditModal');
+  if (!modal || modal.style.display !== 'block') {
+    currentEditModalSession = null;
+    return;
+  }
+  // If the session was deleted out from under us, close.
+  const exists = workoutData.weeks[currentWeekIndex] &&
+    workoutData.weeks[currentWeekIndex].sessions &&
+    workoutData.weeks[currentWeekIndex].sessions[currentEditModalSession] !== undefined;
+  if (!exists) { closeSessionEditModal(); return; }
+  renderSessionEditModalContent(currentEditModalSession);
+}
+
+function renderSessionEditModalContent(session) {
+  const body = document.getElementById('sessionEditModalBody');
+  const titleEl = document.getElementById('sessionEditModalLabel');
+  if (!body) return;
+  const sessionExercises = (workoutData.weeks[currentWeekIndex].sessions || {})[session] || [];
+  const sessionVolume = sessionExercises.reduce((total, ex) => total + (parseInt(ex.sets) || 0), 0);
+  if (titleEl) titleEl.textContent = `Session ${session} (${sessionVolume} sets)`;
+  body.innerHTML = `
+    <div class="session-header" style="margin-top: 0;">
+      <div class="session-label">SESSION ${escapeHtml(session)} <span class="session-volume">${sessionVolume}</span></div>
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <button class="add-exercise-btn" onclick="openAddExerciseModal(${jsAttr(session)})">+ Add Exercise</button>
+        <button class="btn-delete-session" onclick="deleteSession(${jsAttr(session)})" title="Delete Session">×</button>
+      </div>
+    </div>
+    <ul class="exercise-list" data-session="${escapeHtml(session)}">
+      ${sessionExercises.map((ex, idx) => `
+        <li class="exercise-item" draggable="true" data-session="${escapeHtml(session)}" data-index="${idx}">
+          <div class="exercise-content">
+            <div class="exercise-name">${escapeHtml(ex.name)}</div>
+            <div class="exercise-details"><span class="sets">${escapeHtml(ex.sets)} sets</span> × ${escapeHtml(ex.repsMin)}-${escapeHtml(ex.repsMax)} reps</div>
+            <div class="exercise-category">${escapeHtml(ex.category)}</div>
+          </div>
+          <div class="exercise-controls">
+            <button class="swap-btn" onclick="openSwapExercise(${jsAttr(session)}, ${idx})" title="Swap exercise">Swap</button>
+            <button class="edit-btn" onclick="editExercise(${jsAttr(session)}, ${idx})">Edit</button>
+            <button class="delete-btn" onclick="deleteExercise(${jsAttr(session)}, ${idx})">Delete</button>
+          </div>
+        </li>
+      `).join('')}
+    </ul>
+  `;
+  addDragListeners();
+}
+
+// Frequency chart filter: muscle groups the user toggled OFF stay hidden.
+// Persists across reloads. Stale entries (renamed/deleted categories) are
+// harmless since they just don't match anything on render.
+let chartHiddenCategories = new Set();
+try {
+  const raw = localStorage.getItem('chartHiddenCategories');
+  if (raw) {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) chartHiddenCategories = new Set(parsed.filter(x => typeof x === 'string'));
+  }
+} catch (e) { /* corrupt prefs — fall back to empty */ }
+
+function toggleCategoryFilter(cat) {
+  if (chartHiddenCategories.has(cat)) {
+    chartHiddenCategories.delete(cat);
+  } else {
+    chartHiddenCategories.add(cat);
+  }
+  try { localStorage.setItem('chartHiddenCategories', JSON.stringify([...chartHiddenCategories])); } catch (e) { /* quota — prefs non-critical */ }
+  renderFrequencyChart();
+}
+
+// Build `{ chest: 6, quads: 3, ... }` for one session's exercises.
+function getSessionCategoryBreakdown(exercises) {
+  const byCategory = {};
+  exercises.forEach(ex => {
+    if (!ex.category) return;
+    byCategory[ex.category] = (byCategory[ex.category] || 0) + (parseInt(ex.sets) || 0);
+  });
+  return byCategory;
+}
+
+// Deterministic colour per category name. Same name -> same hue across renders.
+function categoryColor(name) {
+  let hash = 0;
+  const s = String(name || '');
+  for (let i = 0; i < s.length; i++) hash = (hash * 31 + s.charCodeAt(i)) >>> 0;
+  const hue = hash % 360;
+  return `hsl(${hue}, 65%, 55%)`;
+}
+
+// Per-session category breakdown for the View mode. Always rendered; CSS hides
+// it in Edit mode and shows it in View mode.
+function buildSessionSummary(exercises) {
+  const byCategory = getSessionCategoryBreakdown(exercises);
+  const entries = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
+  if (entries.length === 0) return '';
+  return `<div class="session-summary">${entries.map(([cat, sets]) =>
+    `<span class="summary-item"><span class="summary-cat">${escapeHtml(cat)}</span><span class="summary-sets">${sets}</span></span>`
+  ).join('')}</div>`;
+}
+
+// Stacked vertical bar chart: one bar per session in the current week, each
+// bar segmented by muscle group with segment height proportional to sets.
+// Categories in chartHiddenCategories are excluded from bars and totals;
+// they still appear in the legend as inactive (struck-through) toggles.
+function renderFrequencyChart() {
+  const container = document.getElementById('frequencyChart');
+  if (!container) return;
+  const sessionsObj = workoutData.weeks[currentWeekIndex].sessions || {};
+  const sessionKeys = Object.keys(sessionsObj);
+
+  const breakdowns = {};
+  const allCategories = new Set();
+  const weeklyTotals = {};
+  let maxTotal = 0;
+  let hasAnyExercises = false;
+  sessionKeys.forEach(s => {
+    const bd = getSessionCategoryBreakdown(sessionsObj[s]);
+    const filtered = {};
+    Object.entries(bd).forEach(([cat, sets]) => {
+      allCategories.add(cat);
+      hasAnyExercises = true;
+      weeklyTotals[cat] = (weeklyTotals[cat] || 0) + sets;
+      if (!chartHiddenCategories.has(cat)) filtered[cat] = sets;
+    });
+    breakdowns[s] = filtered;
+    const total = Object.values(filtered).reduce((a, b) => a + b, 0);
+    if (total > maxTotal) maxTotal = total;
+  });
+
+  if (!hasAnyExercises) {
+    container.innerHTML = `
+      <div class="freq-header"><h2>Frequency</h2></div>
+      <div class="freq-empty">Add exercises to any session to see the frequency chart.</div>
+    `;
+    return;
+  }
+
+  const chartHtml = maxTotal === 0
+    ? `<div class="freq-empty" style="height: 240px; display: flex; align-items: center; justify-content: center;">All muscle groups hidden &mdash; click a chip below to add one back.</div>`
+    : `<div class="freq-chart">
+        ${sessionKeys.map(s => {
+          const cats = Object.entries(breakdowns[s]).sort((a, b) => b[1] - a[1]);
+          const total = cats.reduce((sum, [, n]) => sum + n, 0);
+          const heightPct = total > 0 ? (total / maxTotal) * 100 : 0;
+          return `
+            <div class="freq-col">
+              <div class="freq-total">${total}</div>
+              <div class="freq-bar-wrap">
+                <div class="freq-bar" style="height: ${heightPct}%">
+                  ${cats.map(([cat, sets]) => `
+                    <div class="freq-seg" style="flex-grow: ${sets}; background: ${categoryColor(cat)}" title="${escapeHtml(cat)}: ${sets} sets"></div>
+                  `).join('')}
+                </div>
+              </div>
+              <div class="freq-label">${escapeHtml(s)}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>`;
+
+  container.innerHTML = `
+    <div class="freq-header">
+      <h2>Frequency</h2>
+      <div class="freq-subtitle">Sets per session, by muscle group &mdash; current week. Click a chip to toggle.</div>
+    </div>
+    ${chartHtml}
+    <div class="freq-legend">
+      ${[...allCategories].sort().map(cat => {
+        const inactive = chartHiddenCategories.has(cat);
+        const total = weeklyTotals[cat] || 0;
+        return `<button type="button" class="freq-legend-item${inactive ? ' inactive' : ''}" onclick="toggleCategoryFilter(${jsAttr(cat)})" aria-pressed="${!inactive}">
+          <span class="freq-swatch" style="background: ${categoryColor(cat)}"></span>
+          <span class="freq-legend-name">${escapeHtml(cat)}</span>
+          <span class="freq-legend-count">${total}</span>
+        </button>`;
+      }).join('')}
+    </div>
+  `;
+}
+
 // Render sessions of current week
 function renderSessions() {
   const grid = document.getElementById('sessionsGrid');
@@ -237,6 +459,8 @@ function renderSessions() {
       <p>Tap <strong>+ Add Session</strong> above to start building your split.</p>
     `;
     grid.appendChild(empty);
+    renderFrequencyChart();
+    refreshSessionEditModal();
     return;
   }
   sessionKeys.forEach(session => {
@@ -250,7 +474,8 @@ function renderSessions() {
     card.innerHTML = `
       <div class="session-header">
         <div class="session-label">SESSION ${escapeHtml(session)} <span class="session-volume">${sessionVolume}</span></div>
-        <div style="display: flex; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button class="session-edit-toggle" onclick="openSessionEditModal(${jsAttr(session)})" title="Edit this session">Edit</button>
           <button class="add-exercise-btn" onclick="openAddExerciseModal(${jsAttr(session)})">+ Add Exercise</button>
           <button class="btn-delete-session" onclick="deleteSession(${jsAttr(session)})" title="Delete Session">×</button>
         </div>
@@ -271,11 +496,14 @@ function renderSessions() {
           </li>
         `).join('')}
       </ul>
+      ${buildSessionSummary(sessionExercises)}
     `;
 
     grid.appendChild(card);
   });
   addDragListeners();
+  refreshSessionEditModal();
+  renderFrequencyChart();
 }
 
 // Render categories (for current week)
@@ -1686,3 +1914,4 @@ updateCategoryDropdowns();
 renderWeeksTabs();
 renderSessions();
 renderCategories();
+applyLayoutPreference();

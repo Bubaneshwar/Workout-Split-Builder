@@ -88,6 +88,10 @@
                     onchange="importFromCSV(this)">
                 <input type="file" id="importFile" accept=".xls,.html,.htm" style="display: none;"
                     onchange="importFromExcel(this)">
+                <div class="layout-toggle" role="group" aria-label="Sessions layout">
+                    <button class="layout-btn active" id="layoutEditBtn" onclick="setLayout('edit')">Edit</button>
+                    <button class="layout-btn" id="layoutViewBtn" onclick="setLayout('view')">View</button>
+                </div>
                 <button class="btn-secondary" onclick="resetToDefault()"
                     style="padding: 10px 20px; border-radius: 25px;">Reset Default</button>
                 <a class="donate-link" href="https://www.buymeacoffee.com/ivanmalinovski" target="_blank"
@@ -115,6 +119,8 @@
         <section class="sessions-grid" id="sessionsGrid" aria-label="Workout Sessions">
             <!-- Sessions will be populated by JavaScript -->
         </section>
+
+        <section id="frequencyChart" class="frequency-section" aria-label="Frequency overview"></section>
 
         <section class="categories-section" aria-label="Exercise Categories">
             <div class="categories-header">
@@ -337,6 +343,17 @@
             <div class="form-buttons">
                 <button class="btn btn-primary" id="addToSessionSaveBtn">Add to Selected</button>
                 <button class="btn btn-secondary" id="addToSessionCancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: edit a single session inline from View mode -->
+    <div id="sessionEditModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header" id="sessionEditModalLabel">Edit Session</div>
+            <div id="sessionEditModalBody"></div>
+            <div class="form-buttons">
+                <button class="btn btn-primary" id="sessionEditModalDone" onclick="closeSessionEditModal()">Done</button>
             </div>
         </div>
     </div>

@@ -54,6 +54,174 @@
             gap: 25px;
             margin-bottom: 30px;
         }
+
+        /* Per-session category breakdown chips. Always in the DOM; only
+           visible in View mode (CSS toggle below). */
+        .session-summary { display: none; }
+
+        /* Per-card "Edit" button. Hidden in Edit mode (the whole card is
+           already editable); visible in View mode where it opens the session
+           edit modal scoped to that one session. */
+        .session-edit-toggle { display: none; }
+        .sessions-grid.layout-view .session-edit-toggle {
+            display: inline-block;
+            background: #404040;
+            color: #fff;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75em;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .sessions-grid.layout-view .session-edit-toggle:hover {
+            background: #D95D2E;
+        }
+
+        /* Read-only "View" mode = the program at a glance. Hides every edit
+           affordance, strips per-exercise category, replaces it with a
+           per-session chip summary, and locks every exercise row into a strict
+           name | sets×reps grid so they all align identically. */
+        .sessions-grid.layout-view {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 10px;
+        }
+        .sessions-grid.layout-view .session-card {
+            padding: 10px 14px;
+            cursor: default;
+            display: flex;
+            flex-direction: column;
+        }
+        .sessions-grid.layout-view .session-header {
+            margin-bottom: 6px;
+            padding-bottom: 5px;
+            border-bottom-width: 2px;
+            gap: 6px;
+        }
+        .sessions-grid.layout-view .session-label {
+            font-size: 0.85em;
+            padding: 3px 10px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Hide every edit affordance + per-exercise category. */
+        .sessions-grid.layout-view .add-exercise-btn,
+        .sessions-grid.layout-view .btn-delete-session,
+        .sessions-grid.layout-view .exercise-controls,
+        .sessions-grid.layout-view .exercise-category {
+            display: none;
+        }
+
+        .sessions-grid.layout-view .exercise-list {
+            min-height: 0;
+            flex: 1;
+        }
+        .sessions-grid.layout-view .exercise-item {
+            padding: 4px 8px;
+            margin-bottom: 2px;
+            border-left-width: 2px;
+            border-radius: 4px;
+            cursor: default;
+            display: block; /* override the flex from base — exercise-content owns the grid */
+        }
+        .sessions-grid.layout-view .exercise-item:hover {
+            background: #353535; /* cancel the lift-on-hover from edit mode */
+        }
+        /* Strict 2-column grid: name fills, sets/reps right-aligned. Every
+           row in every card now lines up identically. */
+        .sessions-grid.layout-view .exercise-content {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: center;
+            min-width: 0;
+        }
+        .sessions-grid.layout-view .exercise-name {
+            margin-bottom: 0;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: #fff;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .sessions-grid.layout-view .exercise-details {
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #FFD8C2;
+            white-space: nowrap;
+            text-align: right;
+        }
+        /* In View mode the "sets" word and "reps" suffix are noise; collapse
+           the details to "N × M-K" by hiding the literal label text. */
+        .sessions-grid.layout-view .exercise-details .sets {
+            color: #FFD8C2;
+        }
+
+        /* Category breakdown chips at the bottom of each card in View mode. */
+        .sessions-grid.layout-view .session-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #3a3a3a;
+        }
+        .sessions-grid.layout-view .summary-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #3a3a3a;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7em;
+        }
+        .sessions-grid.layout-view .summary-cat {
+            color: #ccc;
+            text-transform: capitalize;
+        }
+        .sessions-grid.layout-view .summary-sets {
+            color: #FFD8C2;
+            font-weight: bold;
+        }
+
+        /* Session edit modal body: a normal session card rendered inside the
+           themed modal. Keep the body padding tight; the .modal-content already
+           provides margins. */
+        #sessionEditModalBody .session-header {
+            margin-bottom: 18px;
+        }
+        #sessionEditModalBody .exercise-list {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .layout-toggle {
+            display: inline-flex;
+            border-radius: 25px;
+            overflow: hidden;
+            border: 1px solid #404040;
+        }
+        .layout-btn {
+            background: #2a2a2a;
+            color: #ccc;
+            border: none;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: bold;
+            transition: background 0.2s, color 0.2s;
+        }
+        .layout-btn:hover {
+            background: #353535;
+            color: #fff;
+        }
+        .layout-btn.active {
+            background: #D95D2E;
+            color: #fff;
+        }
         
         .session-card {
             background: #2a2a2a;
@@ -90,6 +258,155 @@
         }
         .empty-state strong {
             color: #D95D2E;
+        }
+
+        /* Frequency overview — stacked vertical bar chart, one bar per
+           session, segments coloured by muscle group. Sits between the
+           sessions grid and the categories grid. */
+        .frequency-section {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px 25px;
+            margin-bottom: 30px;
+            border: 2px solid #3a3a3a;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .freq-header { margin-bottom: 14px; }
+        .freq-header h2 {
+            margin: 0;
+            font-size: 1.6em;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+        .freq-subtitle {
+            color: #aaa;
+            font-size: 0.85em;
+            margin-top: 2px;
+        }
+        .freq-empty {
+            color: #888;
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 0.95em;
+        }
+        .freq-chart {
+            display: flex;
+            gap: 14px;
+            align-items: stretch;
+            height: 240px;
+            border-bottom: 2px solid #3a3a3a;
+            padding-bottom: 4px;
+            margin-bottom: 14px;
+        }
+        .freq-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 36px;
+        }
+        .freq-total {
+            color: #FFD8C2;
+            font-weight: bold;
+            font-size: 0.85em;
+            margin-bottom: 4px;
+        }
+        .freq-bar-wrap {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .freq-bar {
+            width: 100%;
+            max-width: 56px;
+            display: flex;
+            flex-direction: column-reverse;
+            border-radius: 4px 4px 0 0;
+            overflow: hidden;
+            min-height: 2px;
+            background: #1a1a1a;
+        }
+        .freq-seg {
+            width: 100%;
+            min-height: 2px;
+            transition: filter 0.15s;
+        }
+        .freq-seg:hover {
+            filter: brightness(1.15);
+        }
+        .freq-label {
+            color: #ccc;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-top: 6px;
+            letter-spacing: 0.5px;
+        }
+        .freq-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 14px;
+        }
+        .freq-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85em;
+            color: #ccc;
+            text-transform: capitalize;
+            /* button reset */
+            background: #1f1f1f;
+            border: 1px solid #3a3a3a;
+            border-radius: 14px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+            transition: background 0.15s, opacity 0.15s, border-color 0.15s;
+        }
+        .freq-legend-item:hover {
+            background: #2a2a2a;
+            border-color: #4a4a4a;
+        }
+        .freq-legend-item:focus-visible {
+            outline: 2px solid #D95D2E;
+            outline-offset: 1px;
+        }
+        .freq-legend-item.inactive {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+        .freq-legend-item.inactive .freq-swatch {
+            opacity: 0.6;
+        }
+        .freq-legend-name {
+            /* No special style — sits between swatch and count. */
+        }
+        .freq-legend-count {
+            color: #FFD8C2;
+            font-weight: bold;
+            margin-left: 2px;
+            background: #2a2a2a;
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+        .freq-legend-item.inactive .freq-legend-count {
+            color: #888;
+            background: #1a1a1a;
+        }
+        .freq-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        @media (max-width: 768px) {
+            .freq-chart { height: 180px; gap: 8px; }
+            .freq-bar { max-width: 40px; }
+            .freq-label { font-size: 0.75em; }
         }
         
         .session-header {
