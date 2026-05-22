@@ -331,10 +331,22 @@
         .freq-seg {
             width: 100%;
             min-height: 2px;
-            transition: filter 0.15s;
+            transition: filter 0.15s, opacity 0.15s;
         }
         .freq-seg:hover {
             filter: brightness(1.15);
+        }
+        /* Hover-to-trace: matching segments stay full + get a white ring,
+           everything else fades right back. */
+        .freq-seg.freq-dimmed {
+            opacity: 0.13;
+        }
+        .freq-seg.freq-highlighted {
+            outline: 2px solid rgba(255, 255, 255, 0.9);
+            outline-offset: -2px;
+        }
+        .freq-legend-item.freq-dimmed {
+            opacity: 0.25;
         }
         .freq-label {
             color: #ccc;

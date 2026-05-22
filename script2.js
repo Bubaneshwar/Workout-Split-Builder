@@ -325,6 +325,29 @@ try {
   }
 } catch (e) { /* corrupt prefs — fall back to empty */ }
 
+// Hovering a chart segment or legend chip highlights that muscle group
+// across every session and fades the rest, so a single category reads at
+// a glance. No-op if the category isn't currently shown in the chart.
+function highlightCategory(cat) {
+  const segs = document.querySelectorAll('.freq-seg');
+  const anyMatch = [...segs].some(s => s.dataset.category === cat);
+  if (!anyMatch) return;
+  segs.forEach(seg => {
+    const match = seg.dataset.category === cat;
+    seg.classList.toggle('freq-highlighted', match);
+    seg.classList.toggle('freq-dimmed', !match);
+  });
+  document.querySelectorAll('.freq-legend-item').forEach(item => {
+    item.classList.toggle('freq-dimmed', item.dataset.category !== cat);
+  });
+}
+
+function clearHighlight() {
+  document.querySelectorAll('.freq-seg, .freq-legend-item').forEach(el => {
+    el.classList.remove('freq-highlighted', 'freq-dimmed');
+  });
+}
+
 function toggleCategoryFilter(cat) {
   if (chartHiddenCategories.has(cat)) {
     chartHiddenCategories.delete(cat);
@@ -415,7 +438,7 @@ function renderFrequencyChart() {
               <div class="freq-bar-wrap">
                 <div class="freq-bar" style="height: ${heightPct}%">
                   ${cats.map(([cat, sets]) => `
-                    <div class="freq-seg" style="flex-grow: ${sets}; background: ${categoryColor(cat)}" title="${escapeHtml(cat)}: ${sets} sets"></div>
+                    <div class="freq-seg" data-category="${escapeHtml(cat)}" style="flex-grow: ${sets}; background: ${categoryColor(cat)}" title="${escapeHtml(cat)}: ${sets} sets" onmouseenter="highlightCategory(${jsAttr(cat)})" onmouseleave="clearHighlight()"></div>
                   `).join('')}
                 </div>
               </div>
@@ -435,7 +458,7 @@ function renderFrequencyChart() {
       ${[...allCategories].sort().map(cat => {
         const inactive = chartHiddenCategories.has(cat);
         const total = weeklyTotals[cat] || 0;
-        return `<button type="button" class="freq-legend-item${inactive ? ' inactive' : ''}" onclick="toggleCategoryFilter(${jsAttr(cat)})" aria-pressed="${!inactive}">
+        return `<button type="button" class="freq-legend-item${inactive ? ' inactive' : ''}" data-category="${escapeHtml(cat)}" onclick="toggleCategoryFilter(${jsAttr(cat)})" onmouseenter="highlightCategory(${jsAttr(cat)})" onmouseleave="clearHighlight()" aria-pressed="${!inactive}">
           <span class="freq-swatch" style="background: ${categoryColor(cat)}"></span>
           <span class="freq-legend-name">${escapeHtml(cat)}</span>
           <span class="freq-legend-count">${total}</span>
