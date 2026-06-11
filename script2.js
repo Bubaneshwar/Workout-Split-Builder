@@ -743,27 +743,63 @@ function handleDragStart(e) {
 function handleDragEnd() {
   this.classList.remove('dragging');
   document.querySelectorAll('.session-card').forEach(card => card.classList.remove('drag-over'));
+  document.querySelectorAll('.exercise-item.drop-target').forEach(el => el.classList.remove('drop-target'));
 }
 function handleDragOver(e) {
   if (e.preventDefault) e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
+  // Find which sibling the cursor is currently above; mark it as the drop target.
+  const list = this;
+  list.querySelectorAll('.exercise-item.drop-target').forEach(el => el.classList.remove('drop-target'));
+  const afterElement = getDragAfterElement(list, e.clientY);
+  if (afterElement) afterElement.classList.add('drop-target');
   return false;
+}
+// Walk the exercise items in the target list and return the one whose
+// midpoint is just below the cursor — that's the item the dragged exercise
+// should land BEFORE. Returns null when the cursor is past every midpoint
+// (append-to-end case).
+function getDragAfterElement(container, y) {
+  const items = [...container.querySelectorAll('.exercise-item:not(.dragging)')];
+  return items.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset, element: child };
+    }
+    return closest;
+  }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
 }
 function handleDragEnter() {
   this.closest('.session-card').classList.add('drag-over');
 }
 function handleDragLeave(e) {
-  if (e.target === this) this.closest('.session-card').classList.remove('drag-over');
+  if (e.target === this) {
+    this.closest('.session-card').classList.remove('drag-over');
+    this.querySelectorAll('.exercise-item.drop-target').forEach(el => el.classList.remove('drop-target'));
+  }
 }
 function handleDrop(e) {
   if (e.stopPropagation) e.stopPropagation();
+  if (e.preventDefault) e.preventDefault();
   const fromSession = draggedElement.dataset.session;
   const fromIndex = parseInt(draggedElement.dataset.index);
   const toSession = this.dataset.session;
   const sessionsObj = workoutData.weeks[currentWeekIndex].sessions;
   const exercise = sessionsObj[fromSession][fromIndex];
+
+  // Where in the target list does this exercise land?
+  const targetItem = this.querySelector('.exercise-item.drop-target');
+  let toIndex = targetItem ? parseInt(targetItem.dataset.index) : sessionsObj[toSession].length;
+
+  // Remove from source first.
   sessionsObj[fromSession].splice(fromIndex, 1);
-  sessionsObj[toSession].push(exercise);
+
+  // When moving within the same session and the source was BEFORE the
+  // target, the target index shifts down by one after the splice above.
+  if (fromSession === toSession && fromIndex < toIndex) toIndex--;
+
+  sessionsObj[toSession].splice(toIndex, 0, exercise);
   saveToLocalStorage();
   renderSessions();
   renderCategories();
