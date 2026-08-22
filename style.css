@@ -107,6 +107,7 @@
 
         /* Hide every edit affordance + per-exercise category. */
         .sessions-grid.layout-view .add-exercise-btn,
+        .sessions-grid.layout-view .session-copy-btn,
         .sessions-grid.layout-view .btn-delete-session,
         .sessions-grid.layout-view .exercise-controls,
         .sessions-grid.layout-view .exercise-category {
@@ -496,6 +497,21 @@
         
         .add-exercise-btn:hover {
             background: #D95D2E;
+        }
+
+        .session-copy-btn {
+            background: #353535;
+            color: #ddd;
+            border: 1px solid #4a4a4a;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background 0.2s, color 0.2s;
+        }
+        .session-copy-btn:hover {
+            background: #D95D2E;
+            color: #fff;
         }
         
         .exercise-list {
