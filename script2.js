@@ -1215,9 +1215,9 @@ if (saveExerciseBtn) saveExerciseBtn.addEventListener('click', () => {
   const sets = parseInt(document.getElementById('exerciseSets').value);
   const repsMin = parseInt(document.getElementById('exerciseRepsMin').value);
   const repsMax = parseInt(document.getElementById('exerciseRepsMax').value);
-  if (!name) { alert('Please fill in all fields'); return; }
+  if (!name) { showAlert('Missing information', 'Please fill in all fields'); return; }
   const validationError = validateExercise({ sets, repsMin, repsMax });
-  if (validationError) { alert(validationError); return; }
+  if (validationError) { showAlert('Check sets and reps', validationError); return; }
   const exercise = { name, sets, repsMin, repsMax, category };
   if (currentExerciseIndex !== null) {
     workoutData.weeks[currentWeekIndex].sessions[currentSession][currentExerciseIndex] = exercise;
@@ -1387,8 +1387,8 @@ function updateCategoryDropdowns() {
 const saveNewCategoryBtn = document.getElementById('saveNewCategory');
 if (saveNewCategoryBtn) saveNewCategoryBtn.addEventListener('click', () => {
   const name = document.getElementById('newCategoryName').value.trim().toLowerCase();
-  if (!name) { alert('Please enter a category name'); return; }
-  if (workoutData.categories.includes(name)) { alert('Category already exists'); return; }
+  if (!name) { showAlert('Missing information', 'Please enter a category name'); return; }
+  if (workoutData.categories.includes(name)) { showAlert('Already exists', 'Category already exists'); return; }
   workoutData.categories.push(name);
   if (!workoutData.exerciseLibrary[name]) workoutData.exerciseLibrary[name] = [];
   saveToLocalStorage();
@@ -1626,7 +1626,7 @@ function importFromCSV(input) {
 
     } catch (err) {
       console.error(err);
-      alert('Error importing file: ' + err.message);
+      showAlert('Import failed', 'Error importing file: ' + err.message);
     }
     input.value = '';
   };
@@ -1861,7 +1861,7 @@ function importFromExcel(input) {
 
     } catch (err) {
       console.error(err);
-      alert('Error importing file: ' + err.message);
+      showAlert('Import failed', 'Error importing file: ' + err.message);
     }
     // Clear input so same file can be selected again
     input.value = '';
@@ -2050,8 +2050,8 @@ if (libraryAddBtn) {
 
     const cat = catInput.value;
     const name = nameInput.value.trim();
-    if (!cat) { alert('Please choose a muscle group'); return; }
-    if (!name) { alert('Please enter an exercise name'); return; }
+    if (!cat) { showAlert('Missing information', 'Please choose a muscle group'); return; }
+    if (!name) { showAlert('Missing information', 'Please enter an exercise name'); return; }
 
     ensureExerciseInLibrary(cat, name);
     saveToLocalStorage();
@@ -2164,7 +2164,7 @@ if (configSaveBtn) {
     const repsMax = parseInt(configRepsMax ? configRepsMax.value : 12) || 12;
 
     const configError = validateExercise({ sets, repsMin, repsMax });
-    if (configError) { alert(configError); return; }
+    if (configError) { showAlert('Check sets and reps', configError); return; }
 
     if (!workoutData.weeks[currentWeekIndex].sessions[currentSession]) {
       workoutData.weeks[currentWeekIndex].sessions[currentSession] = [];
@@ -2190,10 +2190,10 @@ if (addToSessionSaveBtn) {
     const repsMax = parseInt(document.getElementById('addToSessionRepsMax').value) || 12;
 
     const addError = validateExercise({ sets, repsMin, repsMax });
-    if (addError) { alert(addError); return; }
+    if (addError) { showAlert('Check sets and reps', addError); return; }
 
     const checkboxes = document.querySelectorAll('#addToSessionCheckboxes input[type="checkbox"]:not(:disabled):checked');
-    if (checkboxes.length === 0) { alert('Please select at least one session.'); return; }
+    if (checkboxes.length === 0) { showAlert('Missing information', 'Please select at least one session.'); return; }
 
     checkboxes.forEach(cb => {
       const sessionKey = cb.value;
