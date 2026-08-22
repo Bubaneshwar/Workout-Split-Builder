@@ -822,6 +822,12 @@
             background: #3a3a3a;
         }
         
+        /* The session edit modal is a base surface: Swap / Edit / + Add Exercise
+           inside it open OTHER modals, which must stack above it. It is last in
+           the DOM, so at equal z-index it painted on top of the picker and
+           intercepted every click meant for it. */
+        #sessionEditModal { z-index: 990; }
+
         .modal {
             display: none;
             position: fixed;

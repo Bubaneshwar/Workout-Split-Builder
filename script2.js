@@ -198,6 +198,27 @@ function buildSessionLabelHtml(key, volume, renamable) {
 // Click-to-rename: swap the label span for an <input>. Enter/blur commit,
 // Escape cancels, empty reverts to the letter. renderSessions() rebuilds the
 // DOM on finish, which fires blur re-entrantly — the `done` flag absorbs it.
+// Redraw just the label pill for one session, in the grid and in the session
+// edit modal if it's showing that session. Used instead of renderSessions()
+// when a rename ends: a full re-render destroys whatever button the user is
+// clicking (blur fires before click), so their click never lands.
+function repaintSessionLabel(key) {
+  const list = (workoutData.weeks[currentWeekIndex].sessions || {})[key] || [];
+  const volume = list.reduce((total, ex) => total + (parseInt(ex.sets) || 0), 0);
+  const grid = document.getElementById('sessionsGrid');
+  const isView = !!(grid && grid.classList.contains('layout-view'));
+  const gridLabel = grid && grid.querySelector(`.session-card[data-session="${CSS.escape(key)}"] .session-label`);
+  if (gridLabel) gridLabel.outerHTML = buildSessionLabelHtml(key, volume, !isView);
+  if (currentEditModalSession === key) {
+    const body = document.getElementById('sessionEditModalBody');
+    const modalLabel = body && body.querySelector('.session-label');
+    if (modalLabel) modalLabel.outerHTML = buildSessionLabelHtml(key, volume, true);
+    const titleEl = document.getElementById('sessionEditModalLabel');
+    if (titleEl) titleEl.textContent = `${getSessionLabel(key)} (${volume} sets)`;
+  }
+  renderFrequencyChart(); // column labels use the session name
+}
+
 function startRenameSession(key, el) {
   if (!el || el.querySelector('input')) return;
   const input = document.createElement('input');
@@ -212,7 +233,7 @@ function startRenameSession(key, el) {
     if (done) return;
     done = true;
     if (commit) setSessionName(key, input.value);
-    renderSessions();
+    repaintSessionLabel(key);
   };
   input.addEventListener('keydown', (e) => {
     e.stopPropagation(); // keep the global Escape/Enter handlers out of this
