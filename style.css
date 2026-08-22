@@ -1052,7 +1052,7 @@
             }
 
             /* Apple HIG: 44x44 minimum tap target on touch devices. */
-            .edit-btn, .delete-btn, .swap-btn,
+            .edit-btn, .delete-btn, .swap-btn, .session-copy-btn,
             .edit-category-btn, .delete-category-exercise-btn, .add-to-session-btn {
                 min-height: 44px;
                 min-width: 44px;

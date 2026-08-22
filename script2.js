@@ -1319,8 +1319,10 @@ function addSession() {
 }
 
 // Copy a session's exercises into a new session (next free key) in the same
-// week. The copy is unnamed: names are global across weeks, so auto-naming
-// the new key would label it in every week.
+// week. The copy does NOT take the source's name: names are global across
+// weeks, so naming the new key would relabel it in every week. It does show a
+// name already assigned to that key elsewhere (week 2 has a "Legs" C, this
+// week gains a C) — the key is the session's identity, so that is intended.
 function copySession(session) {
   const sessions = workoutData.weeks[currentWeekIndex].sessions;
   if (!sessions || !sessions[session]) return;
@@ -2396,8 +2398,8 @@ function closeAllModals() {
 
 // ---- Download / Import menus ----
 // Hover still opens them on pointer devices (CSS); click/tap toggles them so
-// they work on touch, where :hover is unreliable. Closing blurs the button
-// so :focus-within doesn't hold the menu open.
+// they work on touch, where :hover is unreliable. Closing has to blur whatever
+// inside the menu holds focus, or :focus-within keeps it open.
 function toggleDropdown(btn) {
   const dd = btn.closest('.dropdown');
   if (!dd) return;
@@ -2423,8 +2425,12 @@ document.addEventListener('click', (e) => {
   const inside = e.target.closest('.dropdown');
   if (!inside || item) {
     closeDropdowns();
-    const b = inside ? inside.querySelector('.dropbtn') : null;
-    if (b) b.blur();
+    // Clicking a menu item focuses the <a>, not the .dropbtn — blurring the
+    // button left the anchor focused and :focus-within held the menu open.
+    // Blur the element that actually has focus inside a dropdown.
+    if (item && typeof item.blur === 'function') item.blur();
+    const focused = document.activeElement;
+    if (focused && focused.closest && focused.closest('.dropdown')) focused.blur();
   }
 });
 
