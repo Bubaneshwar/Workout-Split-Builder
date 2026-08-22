@@ -568,7 +568,8 @@ function renderFrequencyChart() {
         return `<button type="button" class="freq-legend-item${inactive ? ' inactive' : ''}" data-category="${escapeHtml(cat)}" onclick="toggleCategoryFilter(${jsAttr(cat)})" onmouseenter="highlightCategory(${jsAttr(cat)})" onmouseleave="clearHighlight()" aria-pressed="${!inactive}">
           <span class="freq-swatch" style="background: ${categoryColor(cat)}"></span>
           <span class="freq-legend-name">${escapeHtml(cat)}</span>
-          <span class="freq-legend-count">${total}</span>
+          <span class="freq-legend-count">${total} sets</span>
+          <span class="freq-legend-freq">${getCategoryFrequency(cat, currentWeekIndex)}×/wk</span>
         </button>`;
       }).join('')}
     </div>
@@ -577,6 +578,7 @@ function renderFrequencyChart() {
 
 // Render sessions of current week
 function renderSessions() {
+  renderWeekSummary(); // first: the empty-week branch below returns early
   const grid = document.getElementById('sessionsGrid');
   grid.innerHTML = '';
   const isView = grid.classList.contains('layout-view'); // View mode is read-only: no drag
@@ -643,7 +645,16 @@ function renderCategories() {
   grid.innerHTML = '';
   workoutData.categories.forEach(category => {
     const exercises = getAllExercisesByCategory(category);
-    const categoryVolume = getCategoryVolume(category);
+    const vol = getCategoryVolume(category);
+    const freq = getCategoryFrequency(category, currentWeekIndex);
+    // Week-vs-week delta (planning progression). Hidden on week 1 and when unchanged.
+    let deltaHtml = '';
+    if (currentWeekIndex > 0) {
+      const d = vol - getCategoryVolumeForWeek(category, currentWeekIndex - 1);
+      if (d !== 0) {
+        deltaHtml = ` · <span class="cat-delta ${d > 0 ? 'up' : 'down'}" title="vs Week ${currentWeekIndex}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</span>`;
+      }
+    }
 
     const card = document.createElement('div');
     card.className = 'category-card';
@@ -652,10 +663,10 @@ function renderCategories() {
     card.innerHTML = `
       <div class="category-header">
         <div class="category-header-content">
-          <span class="category-volume">(${categoryVolume} SETS)</span>
           ${escapeHtml(category)}
           <button class="btn-delete-category" onclick="deleteCategory(${jsAttr(category)})" title="Delete Category">×</button>
         </div>
+        <div class="category-stats" title="Sets this week · sessions per week that hit this muscle">${vol} sets · ${freq}×/wk${deltaHtml}</div>
       </div>
       <ul class="category-exercises">
         ${exercises.map(ex => {
@@ -793,16 +804,48 @@ function getAllExercisesByCategory(category) {
   return list;
 }
 
-function getCategoryVolume(category) {
-  // Total sets for this category in the CURRENT week only
+// Total sets for a category in one week.
+function getCategoryVolumeForWeek(category, weekIdx) {
+  const week = workoutData.weeks[weekIdx];
+  if (!week) return 0;
   let volume = 0;
-  const sessionsObj = workoutData.weeks[currentWeekIndex].sessions || {};
-  Object.values(sessionsObj).forEach(session => {
-    session.forEach(ex => {
+  Object.values(week.sessions || {}).forEach(list => {
+    (list || []).forEach(ex => {
       if (ex.category === category) volume += parseInt(ex.sets) || 0;
     });
   });
   return volume;
+}
+// Total sets for this category in the CURRENT week only.
+function getCategoryVolume(category) {
+  return getCategoryVolumeForWeek(category, currentWeekIndex);
+}
+// Frequency = how many sessions in the week contain at least one exercise
+// of this category (the "hit chest 3×/week" number — distinct from sets).
+function getCategoryFrequency(category, weekIdx) {
+  const week = workoutData.weeks[weekIdx];
+  if (!week) return 0;
+  return Object.values(week.sessions || {}).filter(list => (list || []).some(ex => ex.category === category)).length;
+}
+function getWeekTotals(weekIdx) {
+  const week = workoutData.weeks[weekIdx];
+  const lists = week ? Object.values(week.sessions || {}) : [];
+  return {
+    sessions: lists.length,
+    exercises: lists.reduce((n, l) => n + (l || []).length, 0),
+    sets: lists.reduce((n, l) => n + (l || []).reduce((sum, ex) => sum + (parseInt(ex.sets) || 0), 0), 0)
+  };
+}
+function plural(n, word) {
+  return `${n} ${word}${n === 1 ? '' : 's'}`;
+}
+
+// "5 sessions · 23 exercises · 84 sets" strip under the week tabs.
+function renderWeekSummary() {
+  const el = document.getElementById('weekSummary');
+  if (!el) return;
+  const t = getWeekTotals(currentWeekIndex);
+  el.textContent = `${plural(t.sessions, 'session')} · ${plural(t.exercises, 'exercise')} · ${plural(t.sets, 'set')}`;
 }
 
 function getExerciseVolume(exerciseName) {
