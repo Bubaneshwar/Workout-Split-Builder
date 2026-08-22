@@ -1185,13 +1185,14 @@ function editExercise(session, index) {
 }
 
 function deleteExercise(session, index) {
+  const ex = workoutData.weeks[currentWeekIndex].sessions[session][index];
+  const exName = ex ? ex.name : 'this exercise';
   showConfirm(
     'Delete exercise',
-    'Are you sure you want to delete this exercise?',
+    `Delete "${exName}" from ${getSessionLabel(session)}?`,
     () => {
-      const ex = workoutData.weeks[currentWeekIndex].sessions[session][index];
       pushUndo();
-      showUndoToast(`Deleted ${ex ? ex.name : 'exercise'}`);
+      showUndoToast(`Deleted ${exName}`);
       workoutData.weeks[currentWeekIndex].sessions[session].splice(index, 1);
       saveToLocalStorage();
       renderSessions();
@@ -1315,9 +1316,10 @@ function copySession(session) {
 }
 
 function deleteSession(session) {
+  const n = (workoutData.weeks[currentWeekIndex].sessions[session] || []).length;
   showConfirm(
     'Delete session',
-    `Delete ${getSessionLabel(session)}?`,
+    `Delete ${getSessionLabel(session)}? It has ${plural(n, 'exercise')}.`,
     () => {
       pushUndo();
       showUndoToast(`Deleted ${getSessionLabel(session)}`);
