@@ -1586,6 +1586,59 @@ function importFromJSON(input) {
   reader.readAsText(file);
 }
 
+// ---- Print view ----
+// The live grid only holds the current week, so printing renders EVERY week
+// into a hidden #printRoot (light, table-based, one week per page) right
+// before the print dialog — via the Download menu or Cmd/Ctrl+P.
+function renderPrintView() {
+  const root = document.getElementById('printRoot');
+  if (!root) return;
+  root.innerHTML = workoutData.weeks.map((week, wIdx) => {
+    const t = getWeekTotals(wIdx);
+    const keys = Object.keys(week.sessions || {});
+    const cats = workoutData.categories.filter(c => getCategoryVolumeForWeek(c, wIdx) > 0);
+    const sessionsHtml = keys.map(k => {
+      const list = week.sessions[k] || [];
+      const vol = list.reduce((sum, ex) => sum + (parseInt(ex.sets) || 0), 0);
+      const rows = list.map(ex => `<tr>
+            <td>${escapeHtml(ex.name)}</td>
+            <td>${escapeHtml(ex.sets)}</td>
+            <td>${escapeHtml(ex.repsMin)}–${escapeHtml(ex.repsMax)}</td>
+            <td>${escapeHtml(ex.category)}</td>
+          </tr>`).join('');
+      return `<div class="print-session">
+        <h3>${escapeHtml(getSessionLabel(k))} <small>${plural(vol, 'set')}</small></h3>
+        <table>
+          <thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Muscle</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="4" class="print-empty">—</td></tr>'}</tbody>
+        </table>
+      </div>`;
+    }).join('');
+    const catRows = cats.map(c => `<tr>
+        <td>${escapeHtml(c)}</td>
+        <td>${getCategoryVolumeForWeek(c, wIdx)}</td>
+        <td>${getCategoryFrequency(c, wIdx)}×</td>
+      </tr>`).join('');
+    return `<section class="print-week">
+      <h2>Week ${wIdx + 1} <small>${plural(t.sessions, 'session')} · ${plural(t.exercises, 'exercise')} · ${plural(t.sets, 'set')}</small></h2>
+      <div class="print-sessions">${sessionsHtml}</div>
+      ${catRows ? `<table class="print-categories">
+        <thead><tr><th>Muscle group</th><th>Sets</th><th>Sessions</th></tr></thead>
+        <tbody>${catRows}</tbody>
+      </table>` : ''}
+    </section>`;
+  }).join('');
+}
+function printSplit() {
+  renderPrintView();
+  window.print();
+}
+window.addEventListener('beforeprint', renderPrintView);
+window.addEventListener('afterprint', () => {
+  const root = document.getElementById('printRoot');
+  if (root) root.innerHTML = '';
+});
+
 // Export/Import CSV
 function exportToCSV() {
   let csvContent = "Week,Session,Exercise,Sets,RepsMin,RepsMax,Category,SessionName\n";

@@ -1146,3 +1146,27 @@
             padding: 4px 6px;
         }
         .undo-toast-btn:hover { text-decoration: underline; }
+
+        /* ---- Print view ---- */
+        .print-root { display: none; }
+        @media print {
+            html, body { background: #fff !important; color: #111; padding: 0; margin: 0; }
+            /* Header controls, chart, library, modals, toast — all live inside main */
+            main.container, .modal, .undo-toast { display: none !important; }
+            .print-root { display: block; }
+            .print-week { break-after: page; page-break-after: always; }
+            .print-week:last-child { break-after: auto; page-break-after: auto; }
+            .print-week h2, .print-session h3 { color: #111; margin: 0 0 6px; }
+            .print-week h2 { font-size: 16pt; }
+            .print-session h3 { font-size: 12pt; }
+            .print-week h2 small, .print-session h3 small { font-weight: normal; color: #555; font-size: 0.7em; margin-left: 8px; }
+            .print-sessions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; margin-bottom: 14px; }
+            .print-session { break-inside: avoid; page-break-inside: avoid; }
+            .print-session table, .print-categories { width: 100%; border-collapse: collapse; font-size: 10pt; }
+            .print-session th, .print-session td, .print-categories th, .print-categories td {
+                border-bottom: 1px solid #ccc; padding: 3px 6px; text-align: left; vertical-align: top;
+            }
+            .print-session th, .print-categories th { font-weight: bold; border-bottom: 2px solid #333; }
+            .print-empty { color: #888; }
+            .print-categories { width: auto; min-width: 50%; }
+        }
