@@ -176,6 +176,7 @@ function setLayout(mode) {
   const valid = (mode === 'view') ? 'view' : 'edit';
   try { localStorage.setItem('sessionsLayout', valid); } catch (e) { /* quota — prefs are non-critical */ }
   applyLayoutPreference();
+  renderSessions(); // draggable rows + listeners depend on the mode
 }
 
 function applyLayoutPreference() {
@@ -310,7 +311,7 @@ function renderSessionEditModalContent(session) {
       `).join('')}
     </ul>
   `;
-  addDragListeners();
+  addDragListeners(body);
 }
 
 // Frequency chart filter: muscle groups the user toggled OFF stay hidden.
@@ -472,6 +473,7 @@ function renderFrequencyChart() {
 function renderSessions() {
   const grid = document.getElementById('sessionsGrid');
   grid.innerHTML = '';
+  const isView = grid.classList.contains('layout-view'); // View mode is read-only: no drag
   const sessionsObj = workoutData.weeks[currentWeekIndex].sessions || {};
   const sessionKeys = Object.keys(sessionsObj);
   if (sessionKeys.length === 0) {
@@ -505,7 +507,7 @@ function renderSessions() {
       </div>
       <ul class="exercise-list" data-session="${escapeHtml(session)}">
         ${sessionExercises.map((ex, idx) => `
-          <li class="exercise-item" draggable="true" data-session="${escapeHtml(session)}" data-index="${idx}">
+          <li class="exercise-item" draggable="${isView ? 'false' : 'true'}" data-session="${escapeHtml(session)}" data-index="${idx}">
             <div class="exercise-content">
               <div class="exercise-name">${escapeHtml(ex.name)}</div>
               <div class="exercise-details"><span class="sets">${escapeHtml(ex.sets)} sets</span> × ${escapeHtml(ex.repsMin)}-${escapeHtml(ex.repsMax)} reps</div>
@@ -524,7 +526,7 @@ function renderSessions() {
 
     grid.appendChild(card);
   });
-  addDragListeners();
+  if (!isView) addDragListeners(grid);
   refreshSessionEditModal();
   renderFrequencyChart();
 }
@@ -718,9 +720,13 @@ function ensureExerciseInLibrary(category, name) {
 }
 
 // Drag and drop
-function addDragListeners() {
-  const items = document.querySelectorAll('.exercise-item');
-  const lists = document.querySelectorAll('.exercise-list');
+// Bind drag listeners only inside `root` (the sessions grid or the session-edit
+// modal body). Binding document-wide let the modal re-render re-bind the grid's
+// lists a second time, so one drop ran handleDrop twice and corrupted order.
+function addDragListeners(root) {
+  const scope = root || document;
+  const items = scope.querySelectorAll('.exercise-item');
+  const lists = scope.querySelectorAll('.exercise-list');
   items.forEach(item => {
     item.addEventListener('dragstart', handleDragStart);
     item.addEventListener('dragend', handleDragEnd);
@@ -771,17 +777,19 @@ function getDragAfterElement(container, y) {
   }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
 }
 function handleDragEnter() {
-  this.closest('.session-card').classList.add('drag-over');
+  // The session-edit modal's list has no .session-card ancestor — guard.
+  this.closest('.session-card')?.classList.add('drag-over');
 }
 function handleDragLeave(e) {
   if (e.target === this) {
-    this.closest('.session-card').classList.remove('drag-over');
+    this.closest('.session-card')?.classList.remove('drag-over');
     this.querySelectorAll('.exercise-item.drop-target').forEach(el => el.classList.remove('drop-target'));
   }
 }
 function handleDrop(e) {
   if (e.stopPropagation) e.stopPropagation();
   if (e.preventDefault) e.preventDefault();
+  if (!draggedElement) return false; // something external was dropped, not an exercise row
   const fromSession = draggedElement.dataset.session;
   const fromIndex = parseInt(draggedElement.dataset.index);
   const toSession = this.dataset.session;
@@ -1970,7 +1978,7 @@ document.querySelectorAll('.modal').forEach(m => {
 // Initialize
 initializeExerciseLibrary();
 updateCategoryDropdowns();
+applyLayoutPreference(); // before renderSessions(): it reads the layout class
 renderWeeksTabs();
 renderSessions();
 renderCategories();
-applyLayoutPreference();
