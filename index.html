@@ -371,6 +371,12 @@
         </div>
     </div>
 
+    <!-- Undo toast: appears after any delete / reset / import -->
+    <div id="undoToast" class="undo-toast" role="status" aria-live="polite">
+        <span id="undoToastMsg"></span><span class="undo-toast-sep">·</span>
+        <button type="button" class="undo-toast-btn" onclick="undoLast()">Undo</button>
+    </div>
+
     <script src="script2.js"></script>
 </body>
 

@@ -276,6 +276,44 @@ function showAlert(title, message) {
   showConfirm(title, message, null, { alertOnly: true });
 }
 
+// ---- Undo ----
+// In-memory stack of JSON snapshots taken right before a destructive action
+// (delete / reset / import). Single-stack semantics: undo restores the most
+// recent snapshot and discards anything done since. Lost on reload.
+const UNDO_CAP = 20;
+const undoStack = [];
+let undoToastTimer = null;
+function pushUndo() {
+  undoStack.push({ data: JSON.stringify(workoutData), weekIndex: currentWeekIndex });
+  if (undoStack.length > UNDO_CAP) undoStack.shift();
+}
+function showUndoToast(message) {
+  const toast = document.getElementById('undoToast');
+  const msg = document.getElementById('undoToastMsg');
+  if (!toast || !msg) return;
+  msg.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(undoToastTimer);
+  undoToastTimer = setTimeout(hideUndoToast, 6000);
+}
+function hideUndoToast() {
+  clearTimeout(undoToastTimer);
+  const toast = document.getElementById('undoToast');
+  if (toast) toast.classList.remove('show');
+}
+function undoLast() {
+  const snap = undoStack.pop();
+  if (!snap) return;
+  workoutData = JSON.parse(snap.data); // snapshot already holds library, categories, names
+  currentWeekIndex = Math.min(Math.max(0, snap.weekIndex), workoutData.weeks.length - 1);
+  saveToLocalStorage();
+  updateCategoryDropdowns();
+  renderWeeksTabs();
+  renderSessions();
+  renderCategories();
+  hideUndoToast();
+}
+
 // Sessions layout preference. 'edit' = full cards with swap/edit/delete + drag.
 // 'view' = compact read-only overview, all action buttons hidden, fits more on screen.
 function setLayout(mode) {
@@ -337,6 +375,8 @@ function resetToDefault() {
     'Reset to default',
     'This will erase all your custom changes and restore the default template. Are you sure?',
     () => {
+      pushUndo();
+      showUndoToast('Reset to the default template');
       workoutData = JSON.parse(JSON.stringify(defaultWorkoutData));
       initializeExerciseLibrary();
       currentWeekIndex = 0;
@@ -721,8 +761,10 @@ function openAddExerciseToCategory(category) {
 function deleteCategoryExercise(name, category) {
   showConfirm(
     'Delete exercise',
-    `Delete "${name}" from the ${category} category? This will also remove it from all sessions.`,
+    `Delete "${name}" from the ${category} category? This will also remove it from all sessions in every week.`,
     () => {
+      pushUndo();
+      showUndoToast(`Deleted ${name} from all sessions`);
       // Remove from exercise library
       if (workoutData.exerciseLibrary && workoutData.exerciseLibrary[category]) {
         workoutData.exerciseLibrary[category] = workoutData.exerciseLibrary[category].filter(n => n !== name);
@@ -1147,6 +1189,9 @@ function deleteExercise(session, index) {
     'Delete exercise',
     'Are you sure you want to delete this exercise?',
     () => {
+      const ex = workoutData.weeks[currentWeekIndex].sessions[session][index];
+      pushUndo();
+      showUndoToast(`Deleted ${ex ? ex.name : 'exercise'}`);
       workoutData.weeks[currentWeekIndex].sessions[session].splice(index, 1);
       saveToLocalStorage();
       renderSessions();
@@ -1274,6 +1319,8 @@ function deleteSession(session) {
     'Delete session',
     `Delete ${getSessionLabel(session)}?`,
     () => {
+      pushUndo();
+      showUndoToast(`Deleted ${getSessionLabel(session)}`);
       delete workoutData.weeks[currentWeekIndex].sessions[session];
       saveToLocalStorage();
       renderSessions();
@@ -1303,6 +1350,8 @@ function deleteCategory(category) {
     'Delete category',
     `Delete category "${category}"?${note}`,
     () => {
+      pushUndo();
+      showUndoToast(`Deleted category ${category}`);
       workoutData.categories = workoutData.categories.filter(c => c !== category);
       delete workoutData.exerciseLibrary[category];
       if (affected > 0) {
@@ -1415,8 +1464,10 @@ function deleteCurrentWeek() {
   const weekNum = currentWeekIndex + 1;
   showConfirm(
     'Delete week',
-    `Delete Week ${weekNum}? This cannot be undone.`,
+    `Delete Week ${weekNum}?`,
     () => {
+      pushUndo();
+      showUndoToast(`Deleted Week ${weekNum}`);
       workoutData.weeks.splice(currentWeekIndex, 1);
       if (currentWeekIndex >= workoutData.weeks.length) {
         currentWeekIndex = workoutData.weeks.length - 1;
@@ -1543,6 +1594,8 @@ function importFromCSV(input) {
           'Import CSV',
           'Import successful' + suffix + '. Override current split?',
           () => {
+            pushUndo();
+            showUndoToast('Imported CSV (previous split replaced)');
             workoutData.weeks = newWeeks;
             workoutData.sessionNames = importedNames; // replaced wholesale, like weeks
 
@@ -1771,6 +1824,8 @@ function importFromExcel(input) {
           'Import Excel',
           `Found ${newWeeks.length} weeks${suffix}. Import and overwrite current split?`,
           () => {
+            pushUndo();
+            showUndoToast('Imported Excel (previous split replaced)');
             workoutData.weeks = newWeeks;
             workoutData.sessionNames = importedNames;
             // Better to keep existing categories list, but ensure we categorize imported exercises.
@@ -2180,9 +2235,16 @@ function closeAllModals() {
   if (pickerWasOpen) closeExercisePicker();
 }
 
-// Escape key closes any open modal.
+// Global keys: Escape closes any open modal; Ctrl/Cmd+Z undoes the last
+// delete / reset / import (but not while typing — that's the browser's undo).
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeAllModals();
+  if (e.key === 'Escape') { closeAllModals(); return; }
+  if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'z') {
+    const t = e.target;
+    const tag = t && t.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+    if (undoStack.length) { e.preventDefault(); undoLast(); }
+  }
 });
 
 // Clicking the backdrop (outside .modal-content) closes the modal.
