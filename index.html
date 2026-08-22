@@ -69,14 +69,16 @@
                 <button class="btn-add" onclick="addSession()">+ Add Session</button>
                 <button class="btn-add" onclick="openAddLibraryExerciseModal()">+ Add Exercise To Library</button>
                 <div class="dropdown">
-                    <button class="btn-add dropbtn" style="background: #2da149;">Download ▼</button>
+                    <button class="btn-add dropbtn" style="background: #2da149;" onclick="toggleDropdown(this)"
+                        aria-haspopup="true" aria-expanded="false">Download ▼</button>
                     <div class="dropdown-content">
                         <a href="javascript:void(0)" onclick="exportToCSV()">CSV File (.csv)</a>
                         <a href="javascript:void(0)" onclick="exportToExcel()">Excel File (.xls)</a>
                     </div>
                 </div>
                 <div class="dropdown">
-                    <button class="btn-add dropbtn" style="background: #1994a6;">Import ▼</button>
+                    <button class="btn-add dropbtn" style="background: #1994a6;" onclick="toggleDropdown(this)"
+                        aria-haspopup="true" aria-expanded="false">Import ▼</button>
                     <div class="dropdown-content">
                         <a href="javascript:void(0)" onclick="document.getElementById('importCSVFile').click()">CSV File
                             (.csv)</a>
