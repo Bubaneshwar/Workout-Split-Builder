@@ -77,17 +77,45 @@ const defaultWorkoutData = {
 };
 
 
-// Load from localStorage or use default
-let workoutData = JSON.parse(localStorage.getItem('workoutSplitData')) || JSON.parse(JSON.stringify(defaultWorkoutData));
-
-// Migration: wrap old {sessions} into weeks
-if (!workoutData.weeks) {
-  const oldSessions = workoutData.sessions || {};
-  workoutData = {
-    weeks: [{ sessions: oldSessions }],
-    categories: workoutData.categories || JSON.parse(JSON.stringify(defaultWorkoutData.categories)),
-    exerciseLibrary: {}
+// Coerce anything that claims to be workout data (localStorage blob, JSON
+// backup file) into the current shape. Throws on garbage so callers can show
+// an error instead of booting into a half-broken state. Shared by boot and
+// the JSON importer.
+//  - pre-weeks shape { sessions } is wrapped into { weeks: [{ sessions }] }
+//  - missing / wrong-typed top-level fields get safe defaults
+//  - per-exercise fields are NOT touched here (boot stays byte-identical for
+//    valid data; the JSON importer validates rows itself)
+function normalizeWorkoutData(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Not a workout data object');
+  let data = raw;
+  if (!Array.isArray(data.weeks)) {
+    if (!data.sessions || typeof data.sessions !== 'object') throw new Error('No weeks or sessions found');
+    data = { weeks: [{ sessions: data.sessions }], categories: data.categories, exerciseLibrary: {} };
+  }
+  const weeks = data.weeks.map(w => ({
+    sessions: (w && w.sessions && typeof w.sessions === 'object' && !Array.isArray(w.sessions)) ? w.sessions : {}
+  }));
+  if (weeks.length === 0) weeks.push(newEmptyWeek());
+  return {
+    weeks,
+    categories: Array.isArray(data.categories)
+      ? data.categories.filter(c => typeof c === 'string')
+      : JSON.parse(JSON.stringify(defaultWorkoutData.categories)),
+    exerciseLibrary: (data.exerciseLibrary && typeof data.exerciseLibrary === 'object' && !Array.isArray(data.exerciseLibrary))
+      ? data.exerciseLibrary
+      : {}
   };
+}
+
+// Load from localStorage or use default. A corrupt blob used to throw at
+// JSON.parse and kill the whole script (blank page, no way to recover).
+let workoutData;
+try {
+  const stored = localStorage.getItem('workoutSplitData');
+  workoutData = stored ? normalizeWorkoutData(JSON.parse(stored)) : JSON.parse(JSON.stringify(defaultWorkoutData));
+} catch (e) {
+  console.error('Stored workout data is unreadable — starting from the default template.', e);
+  workoutData = JSON.parse(JSON.stringify(defaultWorkoutData));
 }
 
 let currentWeekIndex = parseInt(localStorage.getItem('currentWeekIndex') || '0', 10);
