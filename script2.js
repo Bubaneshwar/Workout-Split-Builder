@@ -737,8 +737,8 @@ function renderCategories() {
                 <span>${escapeHtml(ex.name)}</span>
               </div>
               <div class="category-exercise-actions">
-                <button class="add-to-session-btn" onclick="openAddToSessionModal(${jsAttr(ex.name)}, ${jsAttr(ex.category)})">Add to</button>
-                <button class="edit-category-btn" onclick="openCategoryModal(${jsAttr(ex.name)}, ${jsAttr(category)})">Change</button>
+                <button class="add-to-session-btn" onclick="openAddToSessionModal(${jsAttr(ex.name)}, ${jsAttr(ex.category)})">Add to session</button>
+                <button class="edit-category-btn" onclick="openCategoryModal(${jsAttr(ex.name)}, ${jsAttr(category)})" title="Move to another muscle group">Change group</button>
                 <button class="delete-category-exercise-btn" onclick="deleteCategoryExercise(${jsAttr(ex.name)}, ${jsAttr(category)})" title="Delete exercise">×</button>
               </div>
             </li>
