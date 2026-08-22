@@ -397,6 +397,10 @@
         .freq-legend-item.inactive .freq-swatch {
             opacity: 0.6;
         }
+        .freq-legend-freq {
+            color: #999;
+            font-size: 0.85em;
+        }
         .freq-legend-name {
             /* No special style — sits between swatch and count. */
         }
@@ -679,13 +683,18 @@
             gap: 10px;
         }
 
-        .category-volume {
-            font-size: 0.8em;
-            color: #ffffff; /* White for max contrast against dark card */
-            margin-right: 8px;
-            font-weight: bold;
-            opacity: 0.9;
+        /* "16 sets · 3×/wk · ▲2" under the category name. Resets the
+           uppercase/letter-spacing inherited from .category-header. */
+        .category-stats {
+            font-size: 0.75em;
+            font-weight: normal;
+            color: #ccc;
+            text-transform: none;
+            letter-spacing: 0;
+            margin-top: 4px;
         }
+        .cat-delta.up { color: #9be29b; }
+        .cat-delta.down { color: #f08080; }
 
         .exercise-volume {
             font-size: 0.9em; /* Slightly larger */
@@ -962,6 +971,12 @@
             justify-content: space-between;
             gap: 16px;
             flex-wrap: wrap;
+        }
+        .week-summary {
+            margin-top: 10px;
+            color: #aaa;
+            font-size: 0.9em;
+            letter-spacing: 0.3px;
         }
         .weeks-tabs {
             display: flex;
