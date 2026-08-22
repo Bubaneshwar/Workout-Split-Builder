@@ -1499,6 +1499,93 @@ function deleteCurrentWeek() {
   );
 }
 
+// ---- JSON backup ----
+// The one lossless format: weeks, session names, categories AND the library
+// round-trip. (CSV drops the library + empty sessions; Excel drops categories.)
+function exportToJSON() {
+  const payload = { app: 'awesome-splits', version: 1, exportedAt: new Date().toISOString(), data: workoutData };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const downloadLink = document.createElement('a');
+  downloadLink.href = url;
+  downloadLink.download = `awesome-splits-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+  URL.revokeObjectURL(url);
+}
+
+function importFromJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      // Accept our envelope or a bare workoutData object.
+      const raw = (parsed && parsed.app === 'awesome-splits' && parsed.data) ? parsed.data : parsed;
+      const data = normalizeWorkoutData(raw); // throws on the wrong shape
+
+      // Per-exercise validation (normalize only fixes the top-level shape).
+      let skipped = 0;
+      data.weeks.forEach(w => {
+        Object.keys(w.sessions).forEach(key => {
+          const list = Array.isArray(w.sessions[key]) ? w.sessions[key] : [];
+          w.sessions[key] = list.filter(ex => {
+            const ok = ex && typeof ex.name === 'string' && ex.name.trim() !== '' && !validateExercise(ex);
+            if (!ok) skipped++;
+            return ok;
+          }).map(ex => ({
+            name: ex.name.trim(),
+            sets: parseInt(ex.sets),
+            repsMin: parseInt(ex.repsMin),
+            repsMax: parseInt(ex.repsMax),
+            category: String(ex.category || 'Uncategorized')
+          }));
+        });
+      });
+      const names = {};
+      Object.keys(data.sessionNames).forEach(k => {
+        const v = data.sessionNames[k];
+        if (typeof v === 'string' && v.trim()) names[k] = v.trim().slice(0, SESSION_NAME_MAX);
+      });
+      data.sessionNames = names;
+      Object.keys(data.exerciseLibrary).forEach(cat => {
+        const l = data.exerciseLibrary[cat];
+        data.exerciseLibrary[cat] = Array.isArray(l) ? l.filter(n => typeof n === 'string') : [];
+      });
+      // Every category an exercise uses gets a card.
+      const cats = new Set(data.categories);
+      data.weeks.forEach(w => Object.values(w.sessions).forEach(list => list.forEach(ex => {
+        if (!cats.has(ex.category)) { cats.add(ex.category); data.categories.push(ex.category); }
+      })));
+
+      const suffix = skipped ? ` (${skipped} invalid exercise${skipped === 1 ? '' : 's'} skipped)` : '';
+      showConfirm(
+        'Import JSON backup',
+        `Found ${plural(data.weeks.length, 'week')}${suffix}. Replace your current split?`,
+        () => {
+          pushUndo();
+          showUndoToast('Imported JSON backup (previous split replaced)');
+          workoutData = data;
+          currentWeekIndex = 0;
+          initializeExerciseLibrary();
+          saveToLocalStorage();
+          updateCategoryDropdowns();
+          renderWeeksTabs();
+          renderSessions();
+          renderCategories();
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      showAlert('Import failed', 'This is not a valid Awesome Splits backup: ' + (err.message || err));
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
 // Export/Import CSV
 function exportToCSV() {
   let csvContent = "Week,Session,Exercise,Sets,RepsMin,RepsMax,Category,SessionName\n";

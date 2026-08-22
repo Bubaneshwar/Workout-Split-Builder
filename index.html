@@ -74,6 +74,7 @@
                     <div class="dropdown-content">
                         <a href="javascript:void(0)" onclick="exportToCSV()">CSV File (.csv)</a>
                         <a href="javascript:void(0)" onclick="exportToExcel()">Excel File (.xls)</a>
+                        <a href="javascript:void(0)" onclick="exportToJSON()">JSON Backup (.json)</a>
                     </div>
                 </div>
                 <div class="dropdown">
@@ -84,12 +85,16 @@
                             (.csv)</a>
                         <a href="javascript:void(0)" onclick="document.getElementById('importFile').click()">Excel File
                             (.xls)</a>
+                        <a href="javascript:void(0)" onclick="document.getElementById('importJSONFile').click()">JSON
+                            Backup (.json)</a>
                     </div>
                 </div>
                 <input type="file" id="importCSVFile" accept=".csv" style="display: none;"
                     onchange="importFromCSV(this)">
                 <input type="file" id="importFile" accept=".xls,.html,.htm" style="display: none;"
                     onchange="importFromExcel(this)">
+                <input type="file" id="importJSONFile" accept=".json,application/json" style="display: none;"
+                    onchange="importFromJSON(this)">
                 <div class="layout-toggle" role="group" aria-label="Sessions layout">
                     <button class="layout-btn active" id="layoutEditBtn" onclick="setLayout('edit')">Edit</button>
                     <button class="layout-btn" id="layoutViewBtn" onclick="setLayout('view')">View</button>
