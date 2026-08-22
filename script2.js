@@ -265,10 +265,26 @@ function showConfirm(title, message, onConfirm, options) {
   cancelBtn.parentNode.replaceChild(freshCancel, cancelBtn);
   okBtn = freshOk;
   cancelBtn = freshCancel;
+  focusModalInput(modal); // lands on the fresh OK button (Enter confirms, like native confirm())
 
   const close = () => { modal.style.display = 'none'; };
   okBtn.addEventListener('click', () => { close(); if (onConfirm) onConfirm(); });
   cancelBtn.addEventListener('click', close);
+}
+
+// Move keyboard focus into a freshly opened modal: an explicit
+// [data-autofocus] field, else the first editable input/select, else the
+// primary button. Deferred a tick so display:block has applied.
+function focusModalInput(modal) {
+  if (!modal) return;
+  const el = modal.querySelector('[data-autofocus]')
+    || modal.querySelector('input:not([type=hidden]):not([type=checkbox]):not([type=file]):not([readonly]):not([disabled]), select:not([disabled])')
+    || modal.querySelector('.btn-primary');
+  if (!el) return;
+  setTimeout(() => {
+    el.focus();
+    if (el.tagName === 'INPUT' && typeof el.select === 'function') el.select();
+  }, 0);
 }
 
 // Themed alert dialog. Single OK button, no callback.
@@ -399,6 +415,7 @@ function openSessionEditModal(session) {
   if (!modal) return;
   renderSessionEditModalContent(session);
   modal.style.display = 'block';
+  focusModalInput(modal);
 }
 
 function closeSessionEditModal() {
@@ -816,7 +833,7 @@ function openAddToSessionModal(name, category) {
     container.appendChild(label);
   });
 
-  document.getElementById('addToSessionModal').style.display = 'block';
+  document.getElementById('addToSessionModal').style.display = 'block'; focusModalInput(document.getElementById('addToSessionModal'));
 }
 
 function getAllExercisesByCategory(category) {
@@ -1056,7 +1073,7 @@ function openSwapExercise(session, index) {
   const pickerHeader = document.querySelector('#exercisePickerModal .modal-header');
   if (pickerHeader) pickerHeader.textContent = `Swap "${ex.name}" → choose replacement`;
 
-  document.getElementById('exercisePickerModal').style.display = 'block';
+  document.getElementById('exercisePickerModal').style.display = 'block'; focusModalInput(document.getElementById('exercisePickerModal'));
 }
 
 function openAddLibraryExerciseModal(prefillCategory = '') {
@@ -1099,7 +1116,7 @@ function openExercisePicker() {
     });
     renderExerciseTable(pickerSelect.value);
   }
-  document.getElementById('exercisePickerModal').style.display = 'block';
+  document.getElementById('exercisePickerModal').style.display = 'block'; focusModalInput(document.getElementById('exercisePickerModal'));
 }
 function renderExerciseTable(category) {
   const tbody = document.getElementById('exerciseTableBody');
@@ -1181,7 +1198,7 @@ function editExercise(session, index) {
   document.getElementById('exerciseSets').value = exercise.sets;
   document.getElementById('exerciseRepsMin').value = exercise.repsMin;
   document.getElementById('exerciseRepsMax').value = exercise.repsMax;
-  document.getElementById('exerciseModal').style.display = 'block';
+  document.getElementById('exerciseModal').style.display = 'block'; focusModalInput(document.getElementById('exerciseModal'));
 }
 
 function deleteExercise(session, index) {
@@ -1205,7 +1222,7 @@ function openCategoryModal(exerciseName, currentCategory) {
   currentExerciseName = exerciseName;
   document.getElementById('changeCategoryExercise').value = exerciseName;
   document.getElementById('newCategory').value = currentCategory;
-  document.getElementById('categoryModal').style.display = 'block';
+  document.getElementById('categoryModal').style.display = 'block'; focusModalInput(document.getElementById('categoryModal'));
 }
 
 // Save from edit modal
@@ -1334,7 +1351,7 @@ function deleteSession(session) {
 // Categories
 function openAddCategoryModal() {
   document.getElementById('newCategoryName').value = '';
-  document.getElementById('newCategoryModal').style.display = 'block';
+  document.getElementById('newCategoryModal').style.display = 'block'; focusModalInput(document.getElementById('newCategoryModal'));
 }
 
 // Deleting a category is taxonomy cleanup, not exercise deletion: exercises
@@ -2024,7 +2041,7 @@ if (pickerCreateCustomBtn) {
     document.getElementById('exerciseSets').value = '3';
     document.getElementById('exerciseRepsMin').value = '8';
     document.getElementById('exerciseRepsMax').value = '12';
-    document.getElementById('exerciseModal').style.display = 'block';
+    document.getElementById('exerciseModal').style.display = 'block'; focusModalInput(document.getElementById('exerciseModal'));
   });
 }
 
@@ -2134,7 +2151,7 @@ if (exerciseTableBody) {
         if (configRepsMax) configRepsMax.value = stats && stats.repsMax ? stats.repsMax : 12;
 
         document.getElementById('exercisePickerModal').style.display = 'none';
-        document.getElementById('configureExerciseModal').style.display = 'block';
+        document.getElementById('configureExerciseModal').style.display = 'block'; focusModalInput(document.getElementById('configureExerciseModal'));
       }
     }
   });
@@ -2144,7 +2161,7 @@ const configCancelBtn = document.getElementById('configCancel');
 if (configCancelBtn) {
   configCancelBtn.addEventListener('click', () => {
     document.getElementById('configureExerciseModal').style.display = 'none';
-    document.getElementById('exercisePickerModal').style.display = 'block';
+    document.getElementById('exercisePickerModal').style.display = 'block'; focusModalInput(document.getElementById('exercisePickerModal'));
   });
 }
 
@@ -2275,6 +2292,20 @@ document.addEventListener('click', (e) => {
 // delete / reset / import (but not while typing — that's the browser's undo).
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { closeAllModals(); closeDropdowns(); return; }
+  // Enter in a modal text/number field submits via that modal's primary
+  // button. The picker is excluded: Enter in its search box must not
+  // trigger "+ Create Custom Exercise".
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+    const t = e.target;
+    if (t && t.tagName === 'INPUT' && t.type !== 'file' && t.type !== 'checkbox') {
+      const modal = t.closest('.modal');
+      if (modal && modal.style.display === 'block' && modal.id !== 'exercisePickerModal') {
+        const primary = modal.querySelector('.btn-primary');
+        if (primary) { e.preventDefault(); primary.click(); }
+      }
+    }
+    return;
+  }
   if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'z') {
     const t = e.target;
     const tag = t && t.tagName;
