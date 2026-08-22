@@ -2235,10 +2235,44 @@ function closeAllModals() {
   if (pickerWasOpen) closeExercisePicker();
 }
 
-// Global keys: Escape closes any open modal; Ctrl/Cmd+Z undoes the last
+// ---- Download / Import menus ----
+// Hover still opens them on pointer devices (CSS); click/tap toggles them so
+// they work on touch, where :hover is unreliable. Closing blurs the button
+// so :focus-within doesn't hold the menu open.
+function toggleDropdown(btn) {
+  const dd = btn.closest('.dropdown');
+  if (!dd) return;
+  const willOpen = !dd.classList.contains('open');
+  closeDropdowns();
+  if (willOpen) {
+    dd.classList.add('open');
+    btn.setAttribute('aria-expanded', 'true');
+  } else {
+    btn.blur();
+  }
+}
+function closeDropdowns() {
+  document.querySelectorAll('.dropdown.open').forEach(d => {
+    d.classList.remove('open');
+    const b = d.querySelector('.dropbtn');
+    if (b) b.setAttribute('aria-expanded', 'false');
+  });
+}
+// Click outside, or on a menu item (its own inline handler has already run), closes.
+document.addEventListener('click', (e) => {
+  const item = e.target.closest('.dropdown-content a');
+  const inside = e.target.closest('.dropdown');
+  if (!inside || item) {
+    closeDropdowns();
+    const b = inside ? inside.querySelector('.dropbtn') : null;
+    if (b) b.blur();
+  }
+});
+
+// Global keys: Escape closes any open modal / menu; Ctrl/Cmd+Z undoes the last
 // delete / reset / import (but not while typing — that's the browser's undo).
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { closeAllModals(); return; }
+  if (e.key === 'Escape') { closeAllModals(); closeDropdowns(); return; }
   if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'z') {
     const t = e.target;
     const tag = t && t.tagName;

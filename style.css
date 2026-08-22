@@ -1097,7 +1097,12 @@
             background-color: #404040;
         }
 
-        .dropdown:hover .dropdown-content, .dropdown:focus-within .dropdown-content {
+        /* Hover-open only where hover exists; click-toggle (.open) everywhere. */
+        @media (hover: hover) {
+            .dropdown:hover .dropdown-content { display: block; }
+        }
+        .dropdown:focus-within .dropdown-content,
+        .dropdown.open .dropdown-content {
             display: block;
         }
 
