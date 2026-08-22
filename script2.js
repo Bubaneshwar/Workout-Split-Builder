@@ -73,7 +73,8 @@ const defaultWorkoutData = {
     }
   ],
   categories: ["front delts", "rear delts", "side delts", "triceps", "biceps", "hamstrings", "quads", "calves", "neck", "forearms", "chest", "lats", "upper back", "lower back", "traps"],
-  exerciseLibrary: {}
+  exerciseLibrary: {},
+  sessionNames: {} // optional display names per session key, shared across weeks
 };
 
 
@@ -103,6 +104,9 @@ function normalizeWorkoutData(raw) {
       : JSON.parse(JSON.stringify(defaultWorkoutData.categories)),
     exerciseLibrary: (data.exerciseLibrary && typeof data.exerciseLibrary === 'object' && !Array.isArray(data.exerciseLibrary))
       ? data.exerciseLibrary
+      : {},
+    sessionNames: (data.sessionNames && typeof data.sessionNames === 'object' && !Array.isArray(data.sessionNames))
+      ? data.sessionNames
       : {}
   };
 }
@@ -146,6 +150,80 @@ function escapeHtml(s) {
 // the JS sees a valid double-quoted string regardless of what's inside `s`.
 function jsAttr(s) {
   return escapeHtml(JSON.stringify(String(s == null ? '' : s)));
+}
+
+// ---- Session names ----
+// A session's KEY (A, B, …) is its identity in every week; its NAME ("Push")
+// is an optional label stored once at workoutData.sessionNames[key], so
+// renaming A on week 1 renames it on every week.
+const SESSION_NAME_MAX = 24;
+function getSessionName(key) {
+  return (workoutData.sessionNames && workoutData.sessionNames[key]) || '';
+}
+// Prose label for dialogs / titles / checkboxes: "Push" or "Session A".
+function getSessionLabel(key) {
+  return getSessionName(key) || `Session ${key}`;
+}
+// Compact label for the chart column: "Push" or "A".
+function getSessionShortLabel(key) {
+  return getSessionName(key) || key;
+}
+function setSessionName(key, raw) {
+  const name = String(raw == null ? '' : raw).trim().slice(0, SESSION_NAME_MAX);
+  if (!workoutData.sessionNames) workoutData.sessionNames = {};
+  if (name) workoutData.sessionNames[key] = name;
+  else delete workoutData.sessionNames[key];
+  saveToLocalStorage();
+}
+function sessionKeyInAnyWeek(key) {
+  return workoutData.weeks.some(w => w.sessions && w.sessions[key] !== undefined);
+}
+// Names outlive sessions (they're keyed globally). When a key is re-allocated
+// and no week still uses it, drop the stale name so "B" doesn't come back as
+// last month's "Pull".
+function clearStaleSessionName(key) {
+  if (workoutData.sessionNames && !sessionKeyInAnyWeek(key)) delete workoutData.sessionNames[key];
+}
+
+// Shared label markup for the session card and the session-edit modal.
+// `renamable` = false in View mode on the grid (read-only); the modal always allows it.
+function buildSessionLabelHtml(key, volume, renamable) {
+  const name = getSessionName(key);
+  const text = name || `SESSION ${key}`;
+  const click = renamable ? ` onclick="startRenameSession(${jsAttr(key)}, this)" title="Click to rename"` : '';
+  const keyBadge = name ? `<span class="session-key" title="Session ${escapeHtml(key)}">${escapeHtml(key)}</span>` : '';
+  return `<div class="session-label"><span class="session-name"${click}>${escapeHtml(text)}</span>${keyBadge} <span class="session-volume">${volume}</span></div>`;
+}
+
+// Click-to-rename: swap the label span for an <input>. Enter/blur commit,
+// Escape cancels, empty reverts to the letter. renderSessions() rebuilds the
+// DOM on finish, which fires blur re-entrantly — the `done` flag absorbs it.
+function startRenameSession(key, el) {
+  if (!el || el.querySelector('input')) return;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'session-name-input';
+  input.maxLength = SESSION_NAME_MAX;
+  input.value = getSessionName(key);
+  input.placeholder = `Session ${key}`;
+  input.setAttribute('aria-label', `Rename session ${key}`);
+  let done = false;
+  const finish = (commit) => {
+    if (done) return;
+    done = true;
+    if (commit) setSessionName(key, input.value);
+    renderSessions();
+  };
+  input.addEventListener('keydown', (e) => {
+    e.stopPropagation(); // keep the global Escape/Enter handlers out of this
+    if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+    else if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+  });
+  input.addEventListener('blur', () => finish(true));
+  el.textContent = '';
+  el.appendChild(input);
+  input.focus();
+  input.select();
 }
 
 // Validate sets/reps fields. Returns null if OK, or an error message string.
@@ -313,10 +391,10 @@ function renderSessionEditModalContent(session) {
   if (!body) return;
   const sessionExercises = (workoutData.weeks[currentWeekIndex].sessions || {})[session] || [];
   const sessionVolume = sessionExercises.reduce((total, ex) => total + (parseInt(ex.sets) || 0), 0);
-  if (titleEl) titleEl.textContent = `Session ${session} (${sessionVolume} sets)`;
+  if (titleEl) titleEl.textContent = `${getSessionLabel(session)} (${sessionVolume} sets)`;
   body.innerHTML = `
     <div class="session-header" style="margin-top: 0;">
-      <div class="session-label">SESSION ${escapeHtml(session)} <span class="session-volume">${sessionVolume}</span></div>
+      ${buildSessionLabelHtml(session, sessionVolume, true)}
       <div style="display: flex; align-items: center; gap: 6px;">
         <button class="add-exercise-btn" onclick="openAddExerciseModal(${jsAttr(session)})">+ Add Exercise</button>
         <button class="btn-delete-session" onclick="deleteSession(${jsAttr(session)})" title="Delete Session">×</button>
@@ -471,7 +549,7 @@ function renderFrequencyChart() {
                   `).join('')}
                 </div>
               </div>
-              <div class="freq-label">${escapeHtml(s)}</div>
+              <div class="freq-label" title="${escapeHtml(getSessionLabel(s))}">${escapeHtml(getSessionShortLabel(s))}</div>
             </div>
           `;
         }).join('')}
@@ -526,7 +604,7 @@ function renderSessions() {
 
     card.innerHTML = `
       <div class="session-header">
-        <div class="session-label">SESSION ${escapeHtml(session)} <span class="session-volume">${sessionVolume}</span></div>
+        ${buildSessionLabelHtml(session, sessionVolume, !isView)}
         <div style="display: flex; align-items: center; gap: 6px;">
           <button class="session-edit-toggle" onclick="openSessionEditModal(${jsAttr(session)})" title="Edit this session">Edit</button>
           <button class="add-exercise-btn" onclick="openAddExerciseModal(${jsAttr(session)})">+ Add Exercise</button>
@@ -678,7 +756,7 @@ function openAddToSessionModal(name, category) {
     label.innerHTML = `
       <input type="checkbox" value="${escapeHtml(sessionKey)}" ${alreadyIn ? 'checked disabled' : ''}
         style="width:16px; height:16px; accent-color:#D95D2E; cursor:pointer;">
-      <span>Session ${escapeHtml(sessionKey)}${alreadyIn ? ' <em style="color:#888;font-size:0.85em;">(already added)</em>' : ''}</span>
+      <span>${escapeHtml(getSessionLabel(sessionKey))}${alreadyIn ? ' <em style="color:#888;font-size:0.85em;">(already added)</em>' : ''}</span>
     `;
     container.appendChild(label);
   });
@@ -1126,6 +1204,7 @@ function nextSessionKey(sessionsObj) {
 function addSession() {
   const sessions = workoutData.weeks[currentWeekIndex].sessions;
   const key = nextSessionKey(sessions);
+  clearStaleSessionName(key);
   sessions[key] = [];
   saveToLocalStorage();
   renderSessions();
@@ -1134,7 +1213,7 @@ function addSession() {
 function deleteSession(session) {
   showConfirm(
     'Delete session',
-    `Are you sure you want to delete Session ${session}?`,
+    `Delete ${getSessionLabel(session)}?`,
     () => {
       delete workoutData.weeks[currentWeekIndex].sessions[session];
       saveToLocalStorage();
@@ -1291,7 +1370,7 @@ function deleteCurrentWeek() {
 
 // Export/Import CSV
 function exportToCSV() {
-  let csvContent = "Week,Session,Exercise,Sets,RepsMin,RepsMax,Category\n";
+  let csvContent = "Week,Session,Exercise,Sets,RepsMin,RepsMax,Category,SessionName\n";
   workoutData.weeks.forEach((week, wIdx) => {
     Object.keys(week.sessions || {}).forEach(sessionKey => {
       (week.sessions[sessionKey] || []).forEach(ex => {
@@ -1302,7 +1381,8 @@ function exportToCSV() {
           ex.sets || 0,
           ex.repsMin || 0,
           ex.repsMax || 0,
-          `"${(ex.category || "").replace(/"/g, '""')}"`
+          `"${(ex.category || "").replace(/"/g, '""')}"`,
+          `"${getSessionName(sessionKey).replace(/"/g, '""')}"`
         ];
         csvContent += row.join(",") + "\n";
       });
@@ -1337,6 +1417,7 @@ function importFromCSV(input) {
       }
 
       const newWeeks = [];
+      const importedNames = {}; // optional 8th column "SessionName" (absent in older exports)
       let skippedRows = 0;
 
       for (let i = 1; i < lines.length; i++) {
@@ -1372,8 +1453,10 @@ function importFromCSV(input) {
         const repsMin = parseInt(values[4]);
         const repsMax = parseInt(values[5]);
         const category = values[6].replace(/^"|"$/g, "");
+        const sessionName = values.length >= 8 ? values[7].replace(/^"|"$/g, "").trim().slice(0, SESSION_NAME_MAX) : '';
 
         if (isNaN(weekIdx) || weekIdx < 0) continue;
+        if (sessionName) importedNames[session] = sessionName;
 
         while (newWeeks.length <= weekIdx) {
           const newWeek = { sessions: {} };
@@ -1400,6 +1483,7 @@ function importFromCSV(input) {
           'Import successful' + suffix + '. Override current split?',
           () => {
             workoutData.weeks = newWeeks;
+            workoutData.sessionNames = importedNames; // replaced wholesale, like weeks
 
             let hasCategories = new Set(workoutData.categories);
             newWeeks.forEach(w => {
@@ -1500,7 +1584,10 @@ function exportToExcel() {
     html += `</colgroup>`;
     html += `<thead>`;
     html += `<tr>`;
-    sessions.forEach(session => { html += `<th colspan="4">SESSION ${session}</th><td class="spacer"></td>`; });
+    sessions.forEach(session => {
+      const name = getSessionName(session);
+      html += `<th colspan="4">SESSION ${escapeHtml(session)}${name ? ': ' + escapeHtml(name) : ''}</th><td class="spacer"></td>`;
+    });
     html += `</tr>`;
     html += `<tr>`;
     sessions.forEach(() => {
@@ -1585,6 +1672,7 @@ function importFromExcel(input) {
       const doc = parser.parseFromString(content, 'text/html');
 
       const newWeeks = [];
+      const importedNames = {};
       let skippedRows = 0;
       const titles = doc.querySelectorAll('.section-title');
 
@@ -1595,6 +1683,7 @@ function importFromExcel(input) {
         if (sessionTable) {
           const parsed = parseWeekTable(sessionTable);
           newWeeks.push({ sessions: parsed.sessions });
+          Object.assign(importedNames, parsed.names || {});
           skippedRows += parsed.skipped || 0;
         } else {
           throw new Error("No session table found");
@@ -1609,6 +1698,7 @@ function importFromExcel(input) {
           if (sibling) {
             const parsed = parseWeekTable(sibling);
             newWeeks.push({ sessions: parsed.sessions });
+            Object.assign(importedNames, parsed.names || {});
             skippedRows += parsed.skipped || 0;
           }
         });
@@ -1621,6 +1711,7 @@ function importFromExcel(input) {
           `Found ${newWeeks.length} weeks${suffix}. Import and overwrite current split?`,
           () => {
             workoutData.weeks = newWeeks;
+            workoutData.sessionNames = importedNames;
             // Better to keep existing categories list, but ensure we categorize imported exercises.
             // Re-initialize library to catch any new custom exercises (mapped to Uncategorized if unknown)
 
@@ -1664,6 +1755,7 @@ function importFromExcel(input) {
 
 function parseWeekTable(table) {
   const sessions = {};
+  const names = {}; // key -> display name, when the header reads "SESSION A: Push"
   let skipped = 0;
   const rows = Array.from(table.querySelectorAll('tr'));
 
@@ -1683,10 +1775,14 @@ function parseWeekTable(table) {
     const text = cell.textContent.trim(); // "SESSION A"
     const colspan = parseInt(cell.getAttribute('colspan') || '1');
 
-    if (text.startsWith('SESSION')) {
-      const sessionKey = text.replace('SESSION', '').trim();
+    // "SESSION A" (old exports) or "SESSION A: Push" (named). Key stops at
+    // whitespace or ':' so "A:" is never captured as the key.
+    const m = text.match(/^SESSION\s+([^\s:]+)(?:\s*:\s*(.*))?$/);
+    if (m) {
+      const sessionKey = m[1];
       sessionMap.push({ key: sessionKey, col: colIndex });
       sessions[sessionKey] = [];
+      if (m[2]) names[sessionKey] = m[2].trim().slice(0, SESSION_NAME_MAX);
     }
     colIndex += colspan;
     // The spacer is usually a separate td or implicit?
@@ -1770,7 +1866,7 @@ function parseWeekTable(table) {
     }
   });
 
-  return { sessions, skipped };
+  return { sessions, names, skipped };
 }
 
 // --- New event listeners for modals ---
