@@ -1122,15 +1122,33 @@ function openAddCategoryModal() {
   document.getElementById('newCategoryModal').style.display = 'block';
 }
 
+// Deleting a category is taxonomy cleanup, not exercise deletion: exercises
+// that used it (in any week) move to "Uncategorized" — the same bucket the
+// CSV/Excel importers already use — instead of being silently orphaned.
 function deleteCategory(category) {
+  let affected = 0;
+  workoutData.weeks.forEach(w => Object.values(w.sessions || {}).forEach(list => list.forEach(ex => {
+    if (ex.category === category) affected++;
+  })));
+  const note = affected
+    ? ` ${affected} exercise${affected === 1 ? '' : 's'} across all weeks will be moved to "Uncategorized".`
+    : '';
   showConfirm(
     'Delete category',
-    `Are you sure you want to delete category "${category}"?`,
+    `Delete category "${category}"?${note}`,
     () => {
       workoutData.categories = workoutData.categories.filter(c => c !== category);
       delete workoutData.exerciseLibrary[category];
+      if (affected > 0) {
+        workoutData.weeks.forEach(w => Object.values(w.sessions || {}).forEach(list => list.forEach(ex => {
+          if (ex.category === category) ex.category = 'Uncategorized';
+        })));
+        if (!workoutData.categories.includes('Uncategorized')) workoutData.categories.push('Uncategorized');
+        initializeExerciseLibrary(); // moved names land under the Uncategorized bucket
+      }
       saveToLocalStorage();
       updateCategoryDropdowns();
+      renderSessions(); // category labels on rows + the frequency chart changed
       renderCategories();
     }
   );
