@@ -1069,20 +1069,36 @@ if (cancelCategoryBtn) cancelCategoryBtn.addEventListener('click', () => {
 });
 
 // Session management
+// Session keys are spreadsheet-style letters: A..Z, AA, AB, ... (bijective
+// base-26). The old String.fromCharCode(+1) approach produced '[' after Z.
+function sessionKeyToIndex(key) {
+  if (!/^[A-Z]+$/.test(key)) return -1; // hand-edited CSV keys are ignored
+  let n = 0;
+  for (const ch of key) n = n * 26 + (ch.charCodeAt(0) - 64);
+  return n - 1;
+}
+function sessionKeyFromIndex(n) {
+  let s = '';
+  n += 1;
+  while (n > 0) {
+    n -= 1;
+    s = String.fromCharCode(65 + (n % 26)) + s;
+    n = Math.floor(n / 26);
+  }
+  return s;
+}
+// Next key = (alphabetically largest existing key) + 1, skipping collisions.
+function nextSessionKey(sessionsObj) {
+  const max = Object.keys(sessionsObj || {}).reduce((m, k) => Math.max(m, sessionKeyToIndex(k)), -1);
+  let key = sessionKeyFromIndex(max + 1);
+  while (sessionsObj && sessionsObj[key]) key = sessionKeyFromIndex(sessionKeyToIndex(key) + 1);
+  return key;
+}
+
 function addSession() {
-  const sessions = Object.keys(workoutData.weeks[currentWeekIndex].sessions);
-  let nextChar = 'A';
-  if (sessions.length > 0) {
-    const lastSession = sessions[sessions.length - 1];
-    nextChar = String.fromCharCode(lastSession.charCodeAt(0) + 1);
-  }
-  if (workoutData.weeks[currentWeekIndex].sessions[nextChar]) {
-    for (let i = 65; i < 91; i++) {
-      const char = String.fromCharCode(i);
-      if (!workoutData.weeks[currentWeekIndex].sessions[char]) { nextChar = char; break; }
-    }
-  }
-  workoutData.weeks[currentWeekIndex].sessions[nextChar] = [];
+  const sessions = workoutData.weeks[currentWeekIndex].sessions;
+  const key = nextSessionKey(sessions);
+  sessions[key] = [];
   saveToLocalStorage();
   renderSessions();
 }
