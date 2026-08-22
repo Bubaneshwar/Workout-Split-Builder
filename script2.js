@@ -396,6 +396,7 @@ function renderSessionEditModalContent(session) {
     <div class="session-header" style="margin-top: 0;">
       ${buildSessionLabelHtml(session, sessionVolume, true)}
       <div style="display: flex; align-items: center; gap: 6px;">
+        <button class="session-copy-btn" onclick="copySession(${jsAttr(session)})" title="Copy this session into a new one">Copy</button>
         <button class="add-exercise-btn" onclick="openAddExerciseModal(${jsAttr(session)})">+ Add Exercise</button>
         <button class="btn-delete-session" onclick="deleteSession(${jsAttr(session)})" title="Delete Session">×</button>
       </div>
@@ -609,6 +610,7 @@ function renderSessions() {
         ${buildSessionLabelHtml(session, sessionVolume, !isView)}
         <div style="display: flex; align-items: center; gap: 6px;">
           <button class="session-edit-toggle" onclick="openSessionEditModal(${jsAttr(session)})" title="Edit this session">Edit</button>
+          <button class="session-copy-btn" onclick="copySession(${jsAttr(session)})" title="Copy this session into a new one">Copy</button>
           <button class="add-exercise-btn" onclick="openAddExerciseModal(${jsAttr(session)})">+ Add Exercise</button>
           <button class="btn-delete-session" onclick="deleteSession(${jsAttr(session)})" title="Delete Session">×</button>
         </div>
@@ -1253,6 +1255,20 @@ function addSession() {
   renderSessions();
 }
 
+// Copy a session's exercises into a new session (next free key) in the same
+// week. The copy is unnamed: names are global across weeks, so auto-naming
+// the new key would label it in every week.
+function copySession(session) {
+  const sessions = workoutData.weeks[currentWeekIndex].sessions;
+  if (!sessions || !sessions[session]) return;
+  const newKey = nextSessionKey(sessions);
+  clearStaleSessionName(newKey);
+  sessions[newKey] = sessions[session].map(ex => ({ ...ex }));
+  saveToLocalStorage();
+  renderSessions();
+  renderCategories(); // current-week volumes changed
+}
+
 function deleteSession(session) {
   showConfirm(
     'Delete session',
@@ -1374,15 +1390,17 @@ function addWeek() {
   renderCategories();
 }
 
-function duplicateLastWeek() {
-  if (workoutData.weeks.length === 0) { addWeek(); return; }
-  const lastWeek = workoutData.weeks[workoutData.weeks.length - 1];
+// Insert a copy of the week you're looking at right after it (the old
+// "Duplicate Last Week" copied the final week even when viewing week 2 of 4).
+function duplicateCurrentWeek() {
+  const src = workoutData.weeks[currentWeekIndex];
+  if (!src) { addWeek(); return; }
   const clone = { sessions: {} };
-  Object.keys(lastWeek.sessions || {}).forEach(key => {
-    clone.sessions[key] = (lastWeek.sessions[key] || []).map(ex => ({ ...ex }));
+  Object.keys(src.sessions || {}).forEach(key => {
+    clone.sessions[key] = (src.sessions[key] || []).map(ex => ({ ...ex }));
   });
-  workoutData.weeks.push(clone);
-  currentWeekIndex = workoutData.weeks.length - 1;
+  workoutData.weeks.splice(currentWeekIndex + 1, 0, clone);
+  currentWeekIndex += 1;
   saveToLocalStorage();
   renderWeeksTabs();
   renderSessions();
