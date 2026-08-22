@@ -47,7 +47,8 @@ Shape of `workoutSplitData` (see `defaultWorkoutData` at [script2.js:2](script2.
     { sessions: { ... } }   // each week is independent
   ],
   categories: ["chest", "quads", "lats", ...],   // muscle groups
-  exerciseLibrary: { chest: ["Bench Press", ...], ... }  // reusable exercise names per category
+  exerciseLibrary: { chest: ["Bench Press", ...], ... },  // reusable exercise names per category
+  sessionNames: { A: "Push", ... }   // optional display names per session key, shared across all weeks
 }
 
 // exercise = { name, sets, repsMin, repsMax, category }

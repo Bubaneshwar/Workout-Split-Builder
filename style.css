@@ -354,6 +354,11 @@
             font-weight: bold;
             margin-top: 6px;
             letter-spacing: 0.5px;
+            /* named sessions can be long; keep the column width */
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .freq-legend {
             display: flex;
@@ -441,6 +446,38 @@
             font-size: 1.2em;
             letter-spacing: 1px;
         }
+
+        /* Session name: click-to-rename span inside the label pill. */
+        .session-name {
+            cursor: text;
+            text-transform: uppercase;
+        }
+        .sessions-grid.layout-view .session-name { cursor: default; }
+        .session-key {
+            font-size: 0.65em;
+            letter-spacing: 0;
+            opacity: 0.85;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .session-name-input {
+            font: inherit;
+            font-size: 0.9em;
+            width: 9em;
+            max-width: 100%;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 6px;
+            padding: 2px 6px;
+            text-transform: none;
+            letter-spacing: normal;
+            outline: none;
+        }
+        .session-name-input::placeholder { color: rgba(255, 255, 255, 0.6); }
         
         .add-exercise-btn {
             background: #404040;
