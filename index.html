@@ -75,6 +75,7 @@
                         <a href="javascript:void(0)" onclick="exportToCSV()">CSV File (.csv)</a>
                         <a href="javascript:void(0)" onclick="exportToExcel()">Excel File (.xls)</a>
                         <a href="javascript:void(0)" onclick="exportToJSON()">JSON Backup (.json)</a>
+                        <a href="javascript:void(0)" onclick="printSplit()">Print / Save as PDF</a>
                     </div>
                 </div>
                 <div class="dropdown">
@@ -148,6 +149,9 @@
             </p>
         </footer>
     </main>
+
+    <!-- Print-only rendering of every week; filled by renderPrintView() -->
+    <div id="printRoot" class="print-root" aria-hidden="true"></div>
 
     <!-- Modal for adding/editing exercises -->
     <div id="exerciseModal" class="modal">
