@@ -525,11 +525,25 @@
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid #D95D2E;
-            transition: background 0.2s;
+            transition: background 0.2s, opacity 0.2s, border-color 0.2s;
             cursor: move;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        /* Hovering a frequency-chart segment or legend chip lights up that
+           muscle group's rows in the category's chart colour (set per row
+           as --cat-color) and fades everything else. */
+        .exercise-item.cat-highlighted {
+            border-left-color: var(--cat-color, #D95D2E);
+            background: color-mix(in srgb, var(--cat-color, #D95D2E) 20%, #353535);
+        }
+        .exercise-item.cat-highlighted .exercise-category {
+            color: var(--cat-color, inherit);
+        }
+        .exercise-item.cat-dimmed {
+            opacity: 0.3;
         }
         
         .exercise-item:hover {

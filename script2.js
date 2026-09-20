@@ -481,7 +481,7 @@ function renderSessionEditModalContent(session) {
     </div>
     <ul class="exercise-list" data-session="${escapeHtml(session)}">
       ${sessionExercises.map((ex, idx) => `
-        <li class="exercise-item" draggable="true" data-session="${escapeHtml(session)}" data-index="${idx}">
+        <li class="exercise-item" draggable="true" data-session="${escapeHtml(session)}" data-index="${idx}" data-category="${escapeHtml(ex.category)}" style="--cat-color: ${categoryColor(ex.category)}">
           <div class="exercise-content">
             <div class="exercise-name">${escapeHtml(ex.name)}</div>
             <div class="exercise-details"><span class="sets">${escapeHtml(ex.sets)} sets</span> × ${escapeHtml(ex.repsMin)}-${escapeHtml(ex.repsMax)} reps</div>
@@ -517,20 +517,33 @@ try {
 function highlightCategory(cat) {
   const segs = document.querySelectorAll('.freq-seg');
   const anyMatch = [...segs].some(s => s.dataset.category === cat);
-  if (!anyMatch) return;
-  segs.forEach(seg => {
-    const match = seg.dataset.category === cat;
-    seg.classList.toggle('freq-highlighted', match);
-    seg.classList.toggle('freq-dimmed', !match);
-  });
-  document.querySelectorAll('.freq-legend-item').forEach(item => {
-    item.classList.toggle('freq-dimmed', item.dataset.category !== cat);
+  if (anyMatch) {
+    segs.forEach(seg => {
+      const match = seg.dataset.category === cat;
+      seg.classList.toggle('freq-highlighted', match);
+      seg.classList.toggle('freq-dimmed', !match);
+    });
+    document.querySelectorAll('.freq-legend-item').forEach(item => {
+      item.classList.toggle('freq-dimmed', item.dataset.category !== cat);
+    });
+  }
+  // Session cards follow the same hover: this muscle group's exercises light
+  // up in their category colour and every other row fades. Runs even when the
+  // category is toggled off the chart (no segments) — the chip is still
+  // hoverable and seeing where a hidden muscle lives in the split is the point.
+  document.querySelectorAll('.exercise-item').forEach(item => {
+    const match = item.dataset.category === cat;
+    item.classList.toggle('cat-highlighted', match);
+    item.classList.toggle('cat-dimmed', !match);
   });
 }
 
 function clearHighlight() {
   document.querySelectorAll('.freq-seg, .freq-legend-item').forEach(el => {
     el.classList.remove('freq-highlighted', 'freq-dimmed');
+  });
+  document.querySelectorAll('.exercise-item').forEach(el => {
+    el.classList.remove('cat-highlighted', 'cat-dimmed');
   });
 }
 
@@ -541,6 +554,10 @@ function toggleCategoryFilter(cat) {
     chartHiddenCategories.add(cat);
   }
   try { localStorage.setItem('chartHiddenCategories', JSON.stringify([...chartHiddenCategories])); } catch (e) { /* quota — prefs non-critical */ }
+  // The clicked chip is destroyed by the re-render below, so its mouseleave
+  // never fires — without this, session rows outside the chart would keep
+  // their stale highlight/dim classes.
+  clearHighlight();
   renderFrequencyChart();
 }
 
@@ -695,7 +712,7 @@ function renderSessions() {
       </div>
       <ul class="exercise-list" data-session="${escapeHtml(session)}">
         ${sessionExercises.map((ex, idx) => `
-          <li class="exercise-item" draggable="${isView ? 'false' : 'true'}" data-session="${escapeHtml(session)}" data-index="${idx}">
+          <li class="exercise-item" draggable="${isView ? 'false' : 'true'}" data-session="${escapeHtml(session)}" data-index="${idx}" data-category="${escapeHtml(ex.category)}" style="--cat-color: ${categoryColor(ex.category)}">
             <div class="exercise-content">
               <div class="exercise-name">${escapeHtml(ex.name)}</div>
               <div class="exercise-details"><span class="sets">${escapeHtml(ex.sets)} sets</span> × ${escapeHtml(ex.repsMin)}-${escapeHtml(ex.repsMax)} reps</div>
