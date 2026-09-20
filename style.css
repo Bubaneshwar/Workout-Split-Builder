@@ -425,6 +425,42 @@
             display: inline-block;
             flex-shrink: 0;
         }
+
+        /* Tick box on a legend chip: locks that muscle group's highlight on
+           until unticked. The tick mark is drawn via CSS from the chip's
+           .locked class, so applyHighlights() can flip it without a re-render. */
+        .freq-lock {
+            width: 15px;
+            height: 15px;
+            border: 1px solid #5a5a5a;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1;
+            color: #1e1e1e;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .freq-lock:hover {
+            border-color: #aaa;
+        }
+        .freq-legend-item.locked .freq-lock {
+            background: var(--cat-color, #D95D2E);
+            border-color: var(--cat-color, #D95D2E);
+        }
+        .freq-legend-item.locked .freq-lock::after {
+            content: '✓';
+        }
+        .freq-legend-item.locked {
+            border-color: var(--cat-color, #4a4a4a);
+        }
+        /* A locked chip never fades below readable — it's the active control. */
+        .freq-legend-item.locked.freq-dimmed {
+            opacity: 0.75;
+        }
         @media (max-width: 768px) {
             .freq-chart { height: 180px; gap: 8px; }
             .freq-bar { max-width: 40px; }

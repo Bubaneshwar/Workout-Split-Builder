@@ -497,6 +497,7 @@ function renderSessionEditModalContent(session) {
     </ul>
   `;
   addDragListeners(body);
+  applyHighlights(); // restore locked highlights on the freshly built modal rows
 }
 
 // Frequency chart filter: muscle groups the user toggled OFF stay hidden.
@@ -511,40 +512,59 @@ try {
   }
 } catch (e) { /* corrupt prefs — fall back to empty */ }
 
-// Hovering a chart segment or legend chip highlights that muscle group
-// across every session and fades the rest, so a single category reads at
-// a glance. No-op if the category isn't currently shown in the chart.
-function highlightCategory(cat) {
-  const segs = document.querySelectorAll('.freq-seg');
-  const anyMatch = [...segs].some(s => s.dataset.category === cat);
-  if (anyMatch) {
-    segs.forEach(seg => {
-      const match = seg.dataset.category === cat;
-      seg.classList.toggle('freq-highlighted', match);
-      seg.classList.toggle('freq-dimmed', !match);
-    });
-    document.querySelectorAll('.freq-legend-item').forEach(item => {
-      item.classList.toggle('freq-dimmed', item.dataset.category !== cat);
-    });
-  }
-  // Session cards follow the same hover: this muscle group's exercises light
-  // up in their category colour and every other row fades. Runs even when the
-  // category is toggled off the chart (no segments) — the chip is still
-  // hoverable and seeing where a hidden muscle lives in the split is the point.
-  document.querySelectorAll('.exercise-item').forEach(item => {
-    const match = item.dataset.category === cat;
-    item.classList.toggle('cat-highlighted', match);
-    item.classList.toggle('cat-dimmed', !match);
+// Muscle groups whose highlight is LOCKED via the tick box on a legend chip.
+// The lock survives hovers and re-renders and lasts until unticked (or the
+// page reloads — it's a preview, not a preference, so it isn't persisted).
+let lockedCategories = new Set();
+
+// One reconciler owns every highlight/dim class, so hover, lock, and
+// re-renders can't leave stale state behind. A hovered category is a
+// temporary preview that wins over the locked set; on mouseleave the
+// locked set takes back over. Matching exercise rows light up in their
+// category colour and everything else fades. This works even for
+// categories toggled off the chart (no segments) — seeing where a hidden
+// muscle lives in the split is the point.
+function applyHighlights(hoverCat) {
+  const active = hoverCat != null ? new Set([hoverCat]) : lockedCategories;
+  const segs = [...document.querySelectorAll('.freq-seg')];
+  const rows = [...document.querySelectorAll('.exercise-item')];
+  // No element matches any active category (e.g. a stale lock on a deleted
+  // group): show the neutral view rather than dimming everything.
+  const anyMatch = segs.some(s => active.has(s.dataset.category)) ||
+    rows.some(r => active.has(r.dataset.category));
+  const dimming = active.size > 0 && anyMatch;
+  segs.forEach(seg => {
+    const match = active.has(seg.dataset.category);
+    seg.classList.toggle('freq-highlighted', dimming && match);
+    seg.classList.toggle('freq-dimmed', dimming && !match);
+  });
+  document.querySelectorAll('.freq-legend-item').forEach(item => {
+    item.classList.toggle('locked', lockedCategories.has(item.dataset.category));
+    item.classList.toggle('freq-dimmed', dimming && !active.has(item.dataset.category));
+  });
+  rows.forEach(item => {
+    const match = active.has(item.dataset.category);
+    item.classList.toggle('cat-highlighted', dimming && match);
+    item.classList.toggle('cat-dimmed', dimming && !match);
   });
 }
 
+function highlightCategory(cat) {
+  applyHighlights(cat);
+}
+
 function clearHighlight() {
-  document.querySelectorAll('.freq-seg, .freq-legend-item').forEach(el => {
-    el.classList.remove('freq-highlighted', 'freq-dimmed');
-  });
-  document.querySelectorAll('.exercise-item').forEach(el => {
-    el.classList.remove('cat-highlighted', 'cat-dimmed');
-  });
+  applyHighlights();
+}
+
+// Tick box on a legend chip: lock/unlock that muscle group's highlight.
+function toggleCategoryLock(cat) {
+  if (lockedCategories.has(cat)) {
+    lockedCategories.delete(cat);
+  } else {
+    lockedCategories.add(cat);
+  }
+  applyHighlights();
 }
 
 function toggleCategoryFilter(cat) {
@@ -554,11 +574,7 @@ function toggleCategoryFilter(cat) {
     chartHiddenCategories.add(cat);
   }
   try { localStorage.setItem('chartHiddenCategories', JSON.stringify([...chartHiddenCategories])); } catch (e) { /* quota — prefs non-critical */ }
-  // The clicked chip is destroyed by the re-render below, so its mouseleave
-  // never fires — without this, session rows outside the chart would keep
-  // their stale highlight/dim classes.
-  clearHighlight();
-  renderFrequencyChart();
+  renderFrequencyChart(); // ends with applyHighlights(), so no stale classes survive
 }
 
 // Build `{ chest: 6, quads: 3, ... }` for one session's exercises.
@@ -654,14 +670,15 @@ function renderFrequencyChart() {
   container.innerHTML = `
     <div class="freq-header">
       <h2>Frequency</h2>
-      <div class="freq-subtitle">Sets per session, by muscle group &mdash; current week. Click a chip to toggle.</div>
+      <div class="freq-subtitle">Sets per session, by muscle group &mdash; current week. Click a chip to show/hide it &middot; tick its box to keep the highlight on.</div>
     </div>
     ${chartHtml}
     <div class="freq-legend">
       ${[...allCategories].sort().map(cat => {
         const inactive = chartHiddenCategories.has(cat);
         const total = weeklyTotals[cat] || 0;
-        return `<button type="button" class="freq-legend-item${inactive ? ' inactive' : ''}" data-category="${escapeHtml(cat)}" onclick="toggleCategoryFilter(${jsAttr(cat)})" onmouseenter="highlightCategory(${jsAttr(cat)})" onmouseleave="clearHighlight()" aria-pressed="${!inactive}">
+        return `<button type="button" class="freq-legend-item${inactive ? ' inactive' : ''}" data-category="${escapeHtml(cat)}" style="--cat-color: ${categoryColor(cat)}" onclick="toggleCategoryFilter(${jsAttr(cat)})" onmouseenter="highlightCategory(${jsAttr(cat)})" onmouseleave="clearHighlight()" aria-pressed="${!inactive}">
+          <span class="freq-lock" role="checkbox" aria-label="Lock highlight for ${escapeHtml(cat)}" title="Tick to keep this muscle group highlighted" onclick="event.stopPropagation(); toggleCategoryLock(${jsAttr(cat)})"></span>
           <span class="freq-swatch" style="background: ${categoryColor(cat)}"></span>
           <span class="freq-legend-name">${escapeHtml(cat)}</span>
           <span class="freq-legend-count">${total} sets</span>
@@ -670,6 +687,7 @@ function renderFrequencyChart() {
       }).join('')}
     </div>
   `;
+  applyHighlights(); // restore locked highlights on the freshly built chart
 }
 
 // Render sessions of current week
