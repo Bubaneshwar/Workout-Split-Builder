@@ -4,7 +4,7 @@ const defaultWorkoutData = {
     {
       sessions: {
         A: [
-          { name: "Hack Squat", sets: 3, repsMin: 8, repsMax: 12, category: "quads" },
+          { name: "Heel-Elevated Smith Machine Squat", sets: 3, repsMin: 8, repsMax: 12, category: "quads" },
           { name: "Lat Pulldown", sets: 3, repsMin: 8, repsMax: 12, category: "lats" },
           { name: "Leg Extension", sets: 2, repsMin: 10, repsMax: 15, category: "quads" },
           { name: "Chest Supported Row", sets: 3, repsMin: 8, repsMax: 12, category: "upper back" },
@@ -15,7 +15,7 @@ const defaultWorkoutData = {
           { name: "Reverse Cable Fly", sets: 4, repsMin: 8, repsMax: 12, category: "rear delts" }
         ],
         B: [
-          { name: "Incline Machine Press", sets: 3, repsMin: 8, repsMax: 12, category: "chest" },
+          { name: "Machine Chest Press", sets: 3, repsMin: 8, repsMax: 12, category: "chest" },
           { name: "Overhead Tricep Extension", sets: 2, repsMin: 10, repsMax: 15, category: "triceps" },
           { name: "Cable Fly", sets: 3, repsMin: 10, repsMax: 15, category: "chest" },
           { name: "Machine Lateral Raise", sets: 3, repsMin: 10, repsMax: 15, category: "side delts" },
@@ -30,7 +30,7 @@ const defaultWorkoutData = {
           { name: "Bulgarian Split Squats (Smith Machine)", sets: 3, repsMin: 8, repsMax: 12, category: "quads" },
           { name: "Wide-Grip Pulldown", sets: 3, repsMin: 8, repsMax: 12, category: "lats" },
           { name: "Machine Shoulder Press", sets: 3, repsMin: 8, repsMax: 12, category: "front delts" },
-          { name: "Lat Prayer", sets: 2, repsMin: 10, repsMax: 15, category: "lats" },
+          { name: "Pullover Machine", sets: 2, repsMin: 10, repsMax: 15, category: "lats" },
           { name: "Hammer Curl", sets: 3, repsMin: 10, repsMax: 15, category: "biceps" },
           { name: "Wrist Curl", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
           { name: "Wrist Extension", sets: 3, repsMin: 15, repsMax: 20, category: "forearms" },
